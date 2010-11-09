@@ -18,14 +18,16 @@ namespace RavenMQ.Storage
             this.uuidGenerator = uuidGenerator;
         }
 
-        public void Enqueue(string queue, DateTime expiry, byte[] data)
+        public Guid Enqueue(string queue, DateTime expiry, byte[] data)
         {
+            var msgId = uuidGenerator.CreateSequentialUuid();
             messages.Put(new JObject
             {
-                {"MsgId", uuidGenerator.CreateSequentialUuid().ToByteArray()},
+                {"MsgId", msgId.ToByteArray()},
                 {"Queue", queue},
                 {"Expiry", expiry}
             }, data);
+            return msgId;
         }
 
         public OutgoingMessage Dequeue(string queue, Guid after)

@@ -6,6 +6,7 @@ using System.Linq;
 using log4net.Config;
 using Raven.Http;
 using RavenMQ.Extensions;
+using RavenMQ.Impl;
 using RavenMQ.Storage;
 
 namespace RavenMQ.Config
@@ -26,8 +27,8 @@ namespace RavenMQ.Config
 
 
             Catalog = new AggregateCatalog(
-                new AssemblyCatalog(typeof(HttpServer).Assembly)
-                //,new AssemblyCatalog(typeof(DocumentDatabase).Assembly)
+                new AssemblyCatalog(typeof(HttpServer).Assembly),
+                new AssemblyCatalog(typeof(Queues).Assembly)
                 );
 
             Catalog.Changed += (sender, args) => ResetContainer();

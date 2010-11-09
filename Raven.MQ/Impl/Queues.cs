@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
+using Newtonsoft.Json.Linq;
+using Raven.Http;
 using RavenMQ.Config;
 using RavenMQ.Data;
 using RavenMQ.Extensions;
@@ -34,7 +37,7 @@ namespace RavenMQ.Impl
 
         #region IQueues Members
 
-        public void Enqueue(IncomingMessage incomingMessage)
+        public Guid Enqueue(IncomingMessage incomingMessage)
         {
             AssertValidQueuePath(incomingMessage.Queue);
             var bytes = incomingMessage.Metadata.ToBytes();
@@ -42,12 +45,14 @@ namespace RavenMQ.Impl
             ms.Write(bytes, 0, bytes.Length);
             ms.Write(incomingMessage.Data, 0, incomingMessage.Data.Length);
 
+            Guid result = Guid.Empty;
             transactionalStorage.Batch(actions =>
             {
                 actions.Queues.IncrementMessageCount(incomingMessage.Queue);
-                actions.Messages.Enqueue(incomingMessage.Queue, DateTime.UtcNow.Add(incomingMessage.TimeToLive),
+                result = actions.Messages.Enqueue(incomingMessage.Queue, DateTime.UtcNow.Add(incomingMessage.TimeToLive),
                                          ms.ToArray());
             });
+            return result;
         }
 
         private static void AssertValidQueuePath(string queue)
@@ -139,6 +144,23 @@ namespace RavenMQ.Impl
             if (DateTime.UtcNow > msg.Expiry)
                 return true;
             return msg.Queue.StartsWith("/queues", StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        public IRaveHttpnConfiguration Configuration
+        {
+            get { return configuration; }
+        }
+
+        public IEnumerable<string> GetQueueNames(int start, int pageSize)
+        {
+            var names = new string[0];
+            transactionalStorage.Batch(actions => names = actions
+                .Queues.GetQueueNames()
+                    .Skip(start)
+                    .Take(pageSize)
+                    .ToArray()
+                    );
+            return names;
         }
     }
 }

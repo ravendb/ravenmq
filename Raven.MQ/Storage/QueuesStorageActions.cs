@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using Raven.Munin;
 using RavenMQ.Data;
 
@@ -75,6 +77,14 @@ namespace RavenMQ.Storage
             }
             readResult.Key["Count"] = count - 1;
             queues.UpdateKey(readResult.Key);
+        }
+
+        public IEnumerable<string> GetQueueNames()
+        {
+            foreach (var key in queues.Keys)
+            {
+                yield return key.Value<string>("Name");
+            }
         }
     }
 }
