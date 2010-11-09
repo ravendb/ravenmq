@@ -18,17 +18,17 @@ namespace RavenMQ.Storage
 
         public static IEnumerable<string> SplitByPath(string value)
         {
-            var list = new List<string>{ value };
+            var list = new List<string> { value };
             var sb = new StringBuilder(value);
             var lastIndexOfSlash = value.LastIndexOf('/');
-            if (lastIndexOfSlash != -1)
+            while (lastIndexOfSlash > 0)
             {
                 sb.Length = lastIndexOfSlash;
-                if (sb.Length > 0)
-                {
-                    list.Add(sb.ToString());
-                }
+                list.Add(sb.ToString());
+                lastIndexOfSlash = value.LastIndexOf('/', lastIndexOfSlash - 1);
             }
+            if (list.Count > 1)
+                list.RemoveAt(list.Count - 1);
             return list.ToArray();
         }
 
@@ -39,7 +39,7 @@ namespace RavenMQ.Storage
             if (compareTo == 0)
                 return 0;
 
-            if (values.Any(value => value.Equals(other, StringComparison.InvariantCultureIgnoreCase)))
+            if (values.Any(v => v.Equals(other, StringComparison.InvariantCultureIgnoreCase)))
             {
                 return 0;
             }
@@ -52,7 +52,7 @@ namespace RavenMQ.Storage
             var s = obj as string;
             if (s != null)
                 return CompareTo(s);
-            var pathComaparable = (PathComaparable) obj;
+            var pathComaparable = (PathComaparable)obj;
             return CompareTo(pathComaparable.value);
         }
     }
