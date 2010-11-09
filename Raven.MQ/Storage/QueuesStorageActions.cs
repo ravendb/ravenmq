@@ -27,15 +27,14 @@ namespace RavenMQ.Storage
 
         public void IncrementMessageCount(string queue)
         {
-            var lastIndexOfSlash = queue.LastIndexOf('/');
-            if(lastIndexOfSlash != -1)
+            foreach (var parentQueue in PathComaparable.SplitByPath(queue))
             {
-                var parentQueue = queue.Substring(0, lastIndexOfSlash);
-                if(parentQueue.Length > 0)
-                {
-                    IncrementMessageCount(parentQueue);
-                }
+                IncrementMessageCountInternal(parentQueue);
             }
+        }
+
+        private void IncrementMessageCountInternal(string queue)
+        {
             var readResult = queues.Read(new JObject {{"Name", queue}});
             if(readResult == null)
             {
@@ -54,15 +53,14 @@ namespace RavenMQ.Storage
 
         public void DecrementMessageCount(string queue)
         {
-            var lastIndexOfSlash = queue.LastIndexOf('/');
-            if (lastIndexOfSlash != -1)
+            foreach (var parentQueue in PathComaparable.SplitByPath(queue))
             {
-                var parentQueue = queue.Substring(0, lastIndexOfSlash);
-                if (parentQueue.Length > 0)
-                {
-                    IncrementMessageCount(queue);
-                }
+                DecrementMessageCountInternal(parentQueue);
             }
+        }
+
+        private void DecrementMessageCountInternal(string queue)
+        {
             var readResult = queues.Read(new JObject { { "Name", queue } });
             if (readResult == null)
             {
@@ -77,7 +75,6 @@ namespace RavenMQ.Storage
             }
             readResult.Key["Count"] = count - 1;
             queues.UpdateKey(readResult.Key);
-           
         }
     }
 }

@@ -96,5 +96,29 @@ namespace Raven.MQ.Tests
             Assert.Equal(2, stats.NumberOfMessages);
       
         }
+
+        [Fact]
+        public void Can_consume_message_from_child_parent()
+        {
+            queues.Enqueue(new IncomingMessage
+            {
+                Queue = "/queues/mailboxes/1234",
+                Data = new byte[] { 1, 2, 3, 4 },
+            });
+
+            Assert.NotNull(queues.Read("/queues/MAILBOXES", Guid.Empty).FirstOrDefault());
+        }
+
+        [Fact]
+        public void Will_not_get_info_from_separate_queue()
+        {
+            queues.Enqueue(new IncomingMessage
+            {
+                Queue = "/queues/mailboxes/1234",
+                Data = new byte[] { 1, 2, 3, 4 },
+            });
+
+            Assert.Null(queues.Read("/queues/mailboxes/54321", Guid.Empty).FirstOrDefault());
+        }
     }
 }

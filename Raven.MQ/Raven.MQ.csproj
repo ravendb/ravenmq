@@ -67,6 +67,7 @@
     <Compile Include="Storage\ITransactionalStorage.cs" />
     <Compile Include="Data\OutgoingMessage.cs" />
     <Compile Include="Storage\MessagesStorageActions.cs" />
+    <Compile Include="Storage\PathComaparable.cs" />
     <Compile Include="Storage\QueuesStorage.cs" />
     <Compile Include="Storage\QueuesStorageActions.cs" />
     <Compile Include="Storage\StorageActionsAccessor.cs" />

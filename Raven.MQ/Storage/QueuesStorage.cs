@@ -9,8 +9,7 @@ namespace RavenMQ.Storage
         {
             Messages = Add(new Table(key => key["MsgId"], "Messages")
             {
-                {"ByQueueName", key => key.Value<string>("QueueName")},
-                {"ByMsgId", key => new ComparableByteArray(key.Value<byte[]>("MsgId"))}
+                {"ByQueueNameAndMsgId", key => Tuple.Create(new PathComaparable(key.Value<string>("Queue")),new ComparableByteArray(key.Value<byte[]>("MsgId")))}
             });
 
             Queues = Add(new Table(key => key["Name"], "Queues"));

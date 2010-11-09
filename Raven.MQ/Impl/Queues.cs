@@ -54,7 +54,7 @@ namespace RavenMQ.Impl
             var msgs = new List<OutgoingMessage>();
             transactionalStorage.Batch(actions =>
             {
-                var outgoingMessage = actions.Messages.Dequeue(lastMessageId);
+                var outgoingMessage = actions.Messages.Dequeue(queue, lastMessageId);
                 while (outgoingMessage != null && msgs.Count < configuration.MaxPageSize)
                 {
                     if (ShouldConsumeMessage(outgoingMessage))
@@ -71,7 +71,7 @@ namespace RavenMQ.Impl
                         Array.Copy(buffer, memoryStream.Position, outgoingMessage.Data, 0, outgoingMessage.Data.Length);
                         msgs.Add(outgoingMessage);
                     }
-                    outgoingMessage = actions.Messages.Dequeue(outgoingMessage.Id);
+                    outgoingMessage = actions.Messages.Dequeue(queue, outgoingMessage.Id);
                 }
             });
             return msgs;

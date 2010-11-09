@@ -18,7 +18,7 @@ namespace RavenMQ.Storage
             this.uuidGenerator = uuidGenerator;
         }
 
-        public void Enqueue(string queue, DateTime expiry, byte[]data)
+        public void Enqueue(string queue, DateTime expiry, byte[] data)
         {
             messages.Put(new JObject
             {
@@ -28,10 +28,14 @@ namespace RavenMQ.Storage
             }, data);
         }
 
-        public OutgoingMessage Dequeue(Guid after)
+        public OutgoingMessage Dequeue(string queue, Guid after)
         {
-            var key = new JObject { { "MsgId", after.ToByteArray()} };
-            var result = messages["ByMsgId"].SkipAfter(key).FirstOrDefault();
+            var key = new JObject
+            {
+                { "Queue", queue },
+                { "MsgId", after.ToByteArray() }
+            };
+            var result = messages["ByQueueNameAndMsgId"].SkipAfter(key).FirstOrDefault();
             if (result == null)
                 return null;
 
@@ -48,7 +52,7 @@ namespace RavenMQ.Storage
 
         public void ConsumeMessage(Guid msgId)
         {
-            messages.Remove(new JObject {{"MsgId", msgId.ToByteArray()}});
+            messages.Remove(new JObject { { "MsgId", msgId.ToByteArray() } });
         }
     }
 }
