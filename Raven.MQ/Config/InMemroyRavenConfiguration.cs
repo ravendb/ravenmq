@@ -4,8 +4,8 @@ using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.Linq;
 using log4net.Config;
-using Raven.Database.Extensions;
 using Raven.Http;
+using RavenMQ.Extensions;
 using RavenMQ.Storage;
 
 namespace RavenMQ.Config
@@ -20,6 +20,8 @@ namespace RavenMQ.Config
 
         public InMemroyRavenConfiguration()
         {
+            MaxPageSize = 128;
+
             Settings = new NameValueCollection(StringComparer.InvariantCultureIgnoreCase);
 
 
@@ -40,6 +42,7 @@ namespace RavenMQ.Config
             Port = portStr != null ? int.Parse(portStr) : 8080;
 
             RunInMemory = GetConfigurationValue<bool>("Raven/RunInMemory") ?? false;
+            MaxPageSize = GetConfigurationValue<int>("Raven/MaxPageSize") ?? 1024;
 
             DataDirectory = Settings["Raven/DataDir"] ?? @"~\Data";
 

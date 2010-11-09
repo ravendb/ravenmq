@@ -1,4 +1,5 @@
 ﻿using System;
+using RavenMQ.Impl;
 
 namespace RavenMQ.Storage
 {
@@ -12,7 +13,10 @@ namespace RavenMQ.Storage
             this.queuesStroage = queuesStroage;
             this.uuidGenerator = uuidGenerator;
             Messages = new MessagesActions(queuesStroage.Messages, uuidGenerator);
+            General = new GeneralStorageActions(queuesStroage.Identity);
         }
+
+        public GeneralStorageActions General { get; set; }
 
         public MessagesActions Messages { get; private set; }
     }

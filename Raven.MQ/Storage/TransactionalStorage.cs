@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using Raven.Munin;
 using RavenMQ.Config;
+using RavenMQ.Impl;
 
 namespace RavenMQ.Storage
 {

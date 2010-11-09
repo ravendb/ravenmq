@@ -2,6 +2,7 @@
 {
     public interface IStorageActionsAccessor
     {
+        GeneralStorageActions General { get; }
         MessagesActions Messages { get; }
     }
 }

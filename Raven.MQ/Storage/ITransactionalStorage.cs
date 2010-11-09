@@ -1,4 +1,5 @@
 ﻿using System;
+using RavenMQ.Impl;
 
 namespace RavenMQ.Storage
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RavenMQ.Storage
+namespace RavenMQ.Impl
 {
     public interface IUuidGenerator
     {
