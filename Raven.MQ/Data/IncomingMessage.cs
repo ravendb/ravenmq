@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using Newtonsoft.Json.Linq;
 
-namespace RavenMQ
+namespace RavenMQ.Data
 {
     public class IncomingMessage
     {

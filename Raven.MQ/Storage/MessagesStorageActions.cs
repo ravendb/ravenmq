@@ -7,12 +7,12 @@ using RavenMQ.Impl;
 
 namespace RavenMQ.Storage
 {
-    public class MessagesActions
+    public class MessagesStorageActions
     {
         private readonly Table messages;
         private readonly IUuidGenerator uuidGenerator;
 
-        public MessagesActions(Table messages, IUuidGenerator uuidGenerator)
+        public MessagesStorageActions(Table messages, IUuidGenerator uuidGenerator)
         {
             this.messages = messages;
             this.uuidGenerator = uuidGenerator;
@@ -42,7 +42,13 @@ namespace RavenMQ.Storage
                 Id = new Guid(readResult.Key.Value<byte[]>("MsgId")),
                 Queue = readResult.Key.Value<string>("Queue"),
                 Data = readResult.Data(),
+                Expiry = readResult.Key.Value<DateTime>("Expiry")
             };
+        }
+
+        public void ConsumeMessage(Guid msgId)
+        {
+            messages.Remove(new JObject {{"MsgId", msgId.ToByteArray()}});
         }
     }
 }

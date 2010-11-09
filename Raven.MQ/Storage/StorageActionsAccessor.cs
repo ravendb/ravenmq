@@ -5,19 +5,17 @@ namespace RavenMQ.Storage
 {
     public class StorageActionsAccessor : IStorageActionsAccessor
     {
-        private readonly QueuesStorage queuesStroage;
-        private readonly IUuidGenerator uuidGenerator;
-
         public StorageActionsAccessor(QueuesStorage queuesStroage, IUuidGenerator uuidGenerator)
         {
-            this.queuesStroage = queuesStroage;
-            this.uuidGenerator = uuidGenerator;
-            Messages = new MessagesActions(queuesStroage.Messages, uuidGenerator);
+            Messages = new MessagesStorageActions(queuesStroage.Messages, uuidGenerator);
             General = new GeneralStorageActions(queuesStroage.Identity);
+            Queues = new QueuesStorageActions(queuesStroage.Queues);
         }
+
+        public QueuesStorageActions Queues { get; set; }
 
         public GeneralStorageActions General { get; set; }
 
-        public MessagesActions Messages { get; private set; }
+        public MessagesStorageActions Messages { get; set; }
     }
 }

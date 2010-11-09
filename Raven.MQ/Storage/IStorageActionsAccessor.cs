@@ -3,6 +3,7 @@
     public interface IStorageActionsAccessor
     {
         GeneralStorageActions General { get; }
-        MessagesActions Messages { get; }
+        MessagesStorageActions Messages { get; }
+        QueuesStorageActions Queues { get; }
     }
 }

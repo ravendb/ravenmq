@@ -8,5 +8,6 @@ namespace RavenMQ
     {
         void Enqueue(IncomingMessage incomingMessage);
         IEnumerable<OutgoingMessage> Read(string queue, Guid lastMessageId);
+        QueueStatistics Statistics(string queue);
     }
 }

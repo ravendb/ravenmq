@@ -8,6 +8,7 @@ namespace RavenMQ.Data
         public Guid Id { get; set; }
         public string Queue { get; set; }
         public JObject Metadata { get; set; }
+        public DateTime Expiry { get; set; }
         public byte[] Data { get; set; }
     }
 }

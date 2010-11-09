@@ -13,10 +13,14 @@ namespace RavenMQ.Storage
                 {"ByMsgId", key => new ComparableByteArray(key.Value<byte[]>("MsgId"))}
             });
 
+            Queues = Add(new Table(key => key["Name"], "Queues"));
+
             Identity = Add(new Table(x => x.Value<string>("name"), "Identity"));
             
             Details = Add(new Table("Details"));
         }
+
+        public Table Queues { get; set; }
 
         public Table Identity { get; set; }
 

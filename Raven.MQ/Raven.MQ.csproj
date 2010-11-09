@@ -61,12 +61,14 @@
     <Compile Include="IQueues.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Impl\IUuidGenerator.cs" />
+    <Compile Include="Data\QueueStatistics.cs" />
     <Compile Include="Storage\GeneralStorageActions.cs" />
     <Compile Include="Storage\IStorageActionsAccessor.cs" />
     <Compile Include="Storage\ITransactionalStorage.cs" />
     <Compile Include="Data\OutgoingMessage.cs" />
-    <Compile Include="Storage\MessagesActions.cs" />
+    <Compile Include="Storage\MessagesStorageActions.cs" />
     <Compile Include="Storage\QueuesStorage.cs" />
+    <Compile Include="Storage\QueuesStorageActions.cs" />
     <Compile Include="Storage\StorageActionsAccessor.cs" />
     <Compile Include="Storage\TransactionalStorage.cs" />
     <Compile Include="Storage\TransactionMode.cs" />

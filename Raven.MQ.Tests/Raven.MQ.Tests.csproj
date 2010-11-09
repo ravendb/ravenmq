@@ -44,7 +44,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractQueuesTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueuesTest.cs" />
     <Compile Include="SimpleMessages.cs" />
   </ItemGroup>
   <ItemGroup>
