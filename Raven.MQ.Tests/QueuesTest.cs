@@ -74,5 +74,27 @@ namespace Raven.MQ.Tests
 
             Assert.Null(queues.Read("/queues/MAILBOXES/1234", Guid.Empty).FirstOrDefault());
         }
+
+        [Fact]
+        public void Can_get_aggregate_information_about_queues()
+        {
+            queues.Enqueue(new IncomingMessage
+            {
+                Queue = "/queues/mailboxes/1234",
+                Data = new byte[] { 1, 2, 3, 4 },
+                TimeToLive = TimeSpan.FromMinutes(-1)
+            });
+
+            queues.Enqueue(new IncomingMessage
+            {
+                Queue = "/queues/mailboxes/4321",
+                Data = new byte[] { 1, 2, 3, 4 },
+                TimeToLive = TimeSpan.FromMinutes(-1)
+            });
+
+            var stats = queues.Statistics("/queues/MAILBOXES");
+            Assert.Equal(2, stats.NumberOfMessages);
+      
+        }
     }
 }
