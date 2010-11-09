@@ -36,6 +36,7 @@ namespace RavenMQ.Impl
 
         public void Enqueue(IncomingMessage incomingMessage)
         {
+            AssertValidQueuePath(incomingMessage.Queue);
             var bytes = incomingMessage.Metadata.ToBytes();
             var ms = new MemoryStream(bytes.Length + incomingMessage.Data.Length);
             ms.Write(bytes, 0, bytes.Length);
@@ -47,6 +48,15 @@ namespace RavenMQ.Impl
                 actions.Messages.Enqueue(incomingMessage.Queue, DateTime.UtcNow.Add(incomingMessage.TimeToLive),
                                          ms.ToArray());
             });
+        }
+
+        private static void AssertValidQueuePath(string queue)
+        {
+            if (queue.StartsWith("/queues/", StringComparison.InvariantCultureIgnoreCase) ||
+                queue.StartsWith("/streams/", StringComparison.InvariantCultureIgnoreCase) ||
+                queue.StartsWith("/remotes/", StringComparison.InvariantCultureIgnoreCase))
+                return;
+            throw new ArgumentException("Queue name does not starts with '/queues/' or '/streams/' or '/remotes/'");
         }
 
         public IEnumerable<OutgoingMessage> Read(string queue, Guid lastMessageId)
@@ -79,6 +89,7 @@ namespace RavenMQ.Impl
 
         public QueueStatistics Statistics(string queue)
         {
+            AssertValidQueuePath(queue);
             QueueStatistics result = null;
             transactionalStorage.Batch(actions => result = actions.Queues.Statistics(queue));
             if (result == null)// non existant queue is also empty queue by default
@@ -118,12 +129,12 @@ namespace RavenMQ.Impl
 
         #endregion
 
-        private bool ShouldIncludeMessage(OutgoingMessage msg)
+        private static bool ShouldIncludeMessage(OutgoingMessage msg)
         {
             return msg.Expiry > DateTime.UtcNow;
         }
 
-        private bool ShouldConsumeMessage(OutgoingMessage msg)
+        private static bool ShouldConsumeMessage(OutgoingMessage msg)
         {
             if (DateTime.UtcNow > msg.Expiry)
                 return true;
