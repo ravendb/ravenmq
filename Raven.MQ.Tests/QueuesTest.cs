@@ -20,6 +20,35 @@ namespace Raven.MQ.Tests
             var outgoingMessage = queues.Read("/queues/mailboxes/1234", Guid.Empty).First();
             queues.ConsumeMessage(outgoingMessage.Id);
             Assert.Null(queues.Read("/queues/mailboxes/1234", Guid.Empty).FirstOrDefault());
+            Assert.Equal(0, queues.Statistics("/queues/mailboxes/1234").NumberOfMessages);
+        }
+
+        [Fact]
+        public void After_reading_message_will_not_get_it_for_specified_timeout()
+        {
+            queues.Enqueue(new IncomingMessage
+            {
+                Queue = "/queues/mailboxes/1234",
+                Data = new byte[] { 1, 2, 3, 4 }
+            });
+
+            queues.Read("/queues/mailboxes/1234", Guid.Empty).First();
+            Assert.Null(queues.Read("/queues/mailboxes/1234", Guid.Empty).FirstOrDefault());
+            Assert.Equal(1, queues.Statistics("/queues/mailboxes/1234").NumberOfMessages);
+        }
+
+        [Fact]
+        public void After_timeout_passed_message_will_be_available_again()
+        {
+            queues.Enqueue(new IncomingMessage
+            {
+                Queue = "/queues/mailboxes/1234",
+                Data = new byte[] { 1, 2, 3, 4 }
+            });
+
+            queues.Read("/queues/mailboxes/1234", Guid.Empty, TimeSpan.FromSeconds(-1)).First();
+            Assert.NotNull(queues.Read("/queues/mailboxes/1234", Guid.Empty).FirstOrDefault());
+            Assert.Equal(1, queues.Statistics("/queues/mailboxes/1234").NumberOfMessages);
         }
 
         [Fact]

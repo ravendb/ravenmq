@@ -71,6 +71,11 @@ namespace RavenMQ.Impl
 
         public IEnumerable<OutgoingMessage> Read(string queue, Guid lastMessageId)
         {
+            return Read(queue, lastMessageId, TimeSpan.FromMinutes(3));
+        }
+
+        public IEnumerable<OutgoingMessage> Read(string queue, Guid lastMessageId, TimeSpan hideTimeout)
+        {
             var msgs = new List<OutgoingMessage>();
             transactionalStorage.Batch(actions =>
             {
@@ -78,6 +83,10 @@ namespace RavenMQ.Impl
                 var outgoingMessage = actions.Messages.Dequeue(queue, lastMessageId);
                 while (outgoingMessage != null && msgs.Count < configuration.MaxPageSize)
                 {
+                    if(ShouldConsumeMessage(outgoingMessage.Expiry,outgoingMessage.Queue))
+                    {
+                        actions.Messages.HideMessageFor(outgoingMessage.Id, hideTimeout);
+                    }
                     if (ShouldIncludeMessage(outgoingMessage))
                     {
                         var buffer = outgoingMessage.Data;

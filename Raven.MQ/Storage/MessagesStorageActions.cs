@@ -39,7 +39,15 @@ namespace RavenMQ.Storage
                 { "Queue", queue },
                 { "MsgId", after.ToByteArray() }
             };
-            var result = messages["ByQueueNameAndMsgId"].SkipAfter(key).FirstOrDefault();
+            var result = messages["ByQueueNameAndMsgId"].SkipAfter(key)
+                .Where(x=>
+                {
+                    var dateTime = x.Value<DateTime?>("HideUntil");
+                    if (dateTime == null)
+                        return true;
+                    return DateTime.UtcNow >= dateTime.Value;
+                })
+                .FirstOrDefault();
             if (result == null)
                 return null;
 
@@ -69,5 +77,15 @@ namespace RavenMQ.Storage
             queuesStorageActions.DecrementMessageCount(queue);
         }
 
+        public void HideMessageFor(Guid msgId, TimeSpan hideTimeout)
+        {
+            var key = new JObject { { "MsgId", msgId.ToByteArray() } };
+            var readResult = messages.Read(key);
+            if (readResult == null)
+                return;
+
+            readResult.Key["HideUntil"] = DateTime.UtcNow.Add(hideTimeout);
+            messages.UpdateKey(readResult.Key);
+        }
     }
 }
