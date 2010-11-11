@@ -6,5 +6,6 @@ namespace Raven.Abstractions.Data
     {
         public IEnumerable<OutgoingMessage> Results { get; set; }
         public bool HasMoreResults { get; set; }
+        public string Queue { get; set; }
     }
 }

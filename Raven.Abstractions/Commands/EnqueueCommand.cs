@@ -6,7 +6,6 @@ namespace Raven.Abstractions.Commands
     public class EnqueueCommand : ICommand
     {
         public IncomingMessage Message { get; set; }
-        public Guid MessageId { get; set; }
 
         public CommandType Type
         {

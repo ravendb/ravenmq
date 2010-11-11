@@ -84,7 +84,7 @@ namespace RavenMQ.Impl
                             break;
                         case CommandType.Enqueue:
                             var enqueueCmd = (EnqueueCommand) command;
-                            enqueueCmd.MessageId = Enqueue(enqueueCmd.Message);
+                            Enqueue(enqueueCmd.Message);
                             break;
                         case CommandType.Read:
                             var readCmd = (ReadCommand) command;
@@ -128,7 +128,8 @@ namespace RavenMQ.Impl
             return new ReadResults
             {
                 HasMoreResults = hasMoreItems,
-                Results = msgs
+                Results = msgs,
+                Queue = readRequest.Queue
             };
         }
 

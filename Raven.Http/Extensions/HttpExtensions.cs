@@ -34,6 +34,13 @@ namespace Raven.Http.Extensions
 
 		public static JObject ReadJson(this IHttpContext context)
 		{
+            var contentType = context.Request.Headers["Content-Type"];
+            if (contentType != null && contentType.Contains("application/bson"))
+            {
+                using (var jsonReader = new BsonReader(context.Request.InputStream))
+                    return JObject.Load(jsonReader);
+            }
+
 			using (var streamReader = new StreamReader(context.Request.InputStream, GetRequestEncoding(context)))
 			using (var jsonReader = new JsonTextReader(streamReader))
 				return JObject.Load(jsonReader);
@@ -41,6 +48,16 @@ namespace Raven.Http.Extensions
 
 		public static T ReadJsonObject<T>(this IHttpContext context)
 		{
+            var contentType = context.Request.Headers["Content-Type"];
+            if (contentType != null && contentType.Contains("application/bson"))
+            {
+                using (var jsonReader = new BsonReader(context.Request.InputStream))
+                    return (T)new JsonSerializer
+                    {
+                        Converters = { new JsonEnumConverter() }
+                    }.Deserialize(jsonReader, typeof(T));
+            }
+
 			using (var streamReader = new StreamReader(context.Request.InputStream, GetRequestEncoding(context)))
 			using (var jsonReader = new JsonTextReader(streamReader))
 				return (T)new JsonSerializer
@@ -51,6 +68,13 @@ namespace Raven.Http.Extensions
 
 		public static JArray ReadJsonArray(this IHttpContext context)
 		{
+            var contentType = context.Request.Headers["Content-Type"];
+		    if(contentType != null && contentType.Contains("application/bson"))
+		    {
+                using (var jsonReader = new BsonReader(context.Request.InputStream))
+                    return JArray.Load(jsonReader);
+		    }
+
 			using (var streamReader = new StreamReader(context.Request.InputStream, GetRequestEncoding(context)))
 			using (var jsonReader = new JsonTextReader(streamReader))
 				return JArray.Load(jsonReader);
@@ -73,16 +97,26 @@ namespace Raven.Http.Extensions
 
 		public static void WriteJson(this IHttpContext context, object obj)
 		{
-			context.Response.Headers["Content-Type"] = "application/json; charset=utf-8";
-			var streamWriter = new StreamWriter(context.Response.OutputStream, Encoding.UTF8);
+            JsonWriter writer;
+            var acceptHeader = context.Request.Headers["Accept"];
+            if (acceptHeader != null && acceptHeader.Contains("application/bson"))
+            {
+                context.Response.Headers["Content-Type"] = "application/bson";
+                writer = new BsonWriter(context.Response.OutputStream);
+            }
+            else
+            {
+                context.Response.Headers["Content-Type"] = "application/json; charset=utf-8";
+                var streamWriter = new StreamWriter(context.Response.OutputStream, Encoding.UTF8);
+                writer = new JsonTextWriter(streamWriter)
+                {
+                    Formatting = Formatting.None
+                };
+            }
 			new JsonSerializer
 			{
 				Converters = {new JsonToJsonConverter(), new JsonEnumConverter()},
-			}.Serialize(new JsonTextWriter(streamWriter)
-			{
-				Formatting = Formatting.None
-			}, obj);
-			streamWriter.Flush();
+			}.Serialize(writer, obj);
 		}
 
 		public static void WriteJson(this IHttpContext context, JToken obj)
