@@ -29,6 +29,26 @@ namespace Raven.MQ.Tests
         }
 
         [Fact]
+        public void After_reading_msg_can_reset_it_and_read_it_again()
+        {
+            queues.Enqueue(new IncomingMessage
+            {
+                Queue = "/queues/mailboxes/1234",
+                Data = new byte[] { 1, 2, 3, 4 }
+            });
+
+            var outgoingMessage = queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes/1234",
+            }).Results.First();
+            queues.ResetMessage(outgoingMessage.Id);
+            Assert.NotNull(queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes/1234",
+            }).Results.FirstOrDefault());
+        }
+
+        [Fact]
         public void After_reading_message_will_not_get_it_for_specified_timeout()
         {
             queues.Enqueue(new IncomingMessage

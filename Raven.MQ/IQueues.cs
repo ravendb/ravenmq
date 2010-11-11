@@ -13,6 +13,7 @@ namespace RavenMQ
         ReadResults Read(ReadRequest readRequest);
         QueueStatistics Statistics(string queue);
         void ConsumeMessage(Guid msgId);
+        void ResetMessage(Guid msgId);
 
         void Batch(params ICommand[] commands);
     }

@@ -78,6 +78,17 @@ namespace RavenMQ.Storage
             queuesStorageActions.DecrementMessageCount(queue);
         }
 
+        public void ResetMessage(Guid msgId)
+        {
+            var key = new JObject { { "MsgId", msgId.ToByteArray() } };
+            var readResult = messages.Read(key);
+            if (readResult == null)
+                return;
+
+            ((JObject)readResult.Key).Remove("HideUntil");
+            messages.UpdateKey(readResult.Key);
+        }
+
         public void HideMessageFor(Guid msgId, TimeSpan hideTimeout)
         {
             var key = new JObject { { "MsgId", msgId.ToByteArray() } };

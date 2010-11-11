@@ -70,6 +70,11 @@ namespace RavenMQ.Impl
             transactionalStorage.Batch(actions=> actions.Messages.ConsumeMessage(msgId, ShouldConsumeMessage));
         }
 
+        public void ResetMessage(Guid msgId)
+        {
+            transactionalStorage.Batch(actions => actions.Messages.ResetMessage(msgId));
+        }
+
         public void Batch(params ICommand[] commands)
         {
             transactionalStorage.Batch(_ =>
@@ -89,6 +94,10 @@ namespace RavenMQ.Impl
                         case CommandType.Read:
                             var readCmd = (ReadCommand) command;
                             readCmd.Result = Read(readCmd.ReadRequest);
+                            break;
+                        case CommandType.Reset:
+                             var resetCmd = (ResetCommand) command;
+                             ResetMessage(resetCmd.MessageId);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();

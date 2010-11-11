@@ -4,6 +4,7 @@
     {
         Consume = 1,
         Enqueue = 2,
-        Read = 3
+        Read = 3,
+        Reset = 4
     }
 }

@@ -39,6 +39,9 @@ namespace RavenMQ.Server.Responders
                     case "Read":
                         typedCmds[index] = (JsonDeserialization<ReadCommand>(cmd));
                         break;
+                    case "Reset":
+                        typedCmds[index] = (JsonDeserialization<ResetCommand>(cmd));
+                        break;
                 }
             }
 

@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{792DB9EB-4B5F-4AF4-BACC-FF842A8DB722}</ProjectGuid>
+    <ProjectGuid>{A8060EAC-0448-4F52-82AE-6A4D62D5082C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Raven.Abstractions</RootNamespace>
-    <AssemblyName>Raven.Abstractions</AssemblyName>
+    <RootNamespace>Raven.MQ.Client</RootNamespace>
+    <AssemblyName>Raven.MQ.Client</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -30,16 +30,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\RavenMQ.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\Modules\Munin\SharedLibs\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -49,27 +40,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\CommandType.cs" />
-    <Compile Include="Commands\ConsumeCommand.cs" />
-    <Compile Include="Commands\EnqueueCommand.cs" />
-    <Compile Include="Commands\ICommand.cs" />
-    <Compile Include="Commands\ReadCommand.cs" />
-    <Compile Include="Commands\ResetCommand.cs" />
-    <Compile Include="Data\IncomingMessage.cs" />
-    <Compile Include="Data\OutgoingMessage.cs" />
-    <Compile Include="Data\QueueStatistics.cs" />
-    <Compile Include="Data\ReadRequest.cs" />
-    <Compile Include="Data\ReadResults.cs" />
-    <Compile Include="Data\TransactionInformation.cs" />
-    <Compile Include="Exceptions\ConcurrencyException.cs" />
-    <Compile Include="Extensions\StreamExtension.cs" />
-    <Compile Include="Json\JsonEnumConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\RavenMQ.snk">
-      <Link>RavenMQ.snk</Link>
-    </None>
+    <ProjectReference Include="..\Raven.Abstractions\Raven.Abstractions.csproj">
+      <Project>{792DB9EB-4B5F-4AF4-BACC-FF842A8DB722}</Project>
+      <Name>Raven.Abstractions</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
