@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -117,15 +118,20 @@ namespace RavenMQ.Storage
             queuesStroage.PerformIdleTasks();
         }
 
-        public void ExecuteImmediatelyOrRegisterForSyncronization(Action action)
+        public void ExecuteImmediatelyOrRegisterForSyncronization(object indexer, object state, Action<IEnumerable<object>> action)
         {
             if (current.Value == null)
             {
-                action();
+                action(new[] { state });
                 return;
             }
-            current.Value.OnCommit += action;
+            List<object> list;
+            if (current.Value.Items.TryGetValue(indexer, out list) == false)
+                current.Value.Items[indexer] = list = new List<object>();
+            list.Add(state);
+            current.Value.OnCommit += () => action(list);
         }
+
         public Guid Id { get; private set; }
     }
 }

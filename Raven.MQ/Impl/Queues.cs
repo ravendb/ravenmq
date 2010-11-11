@@ -57,7 +57,6 @@ namespace RavenMQ.Impl
         public Guid Enqueue(IncomingMessage incomingMessage)
         {
             AssertValidQueuePath(incomingMessage.Queue);
-
            
             Guid result = Guid.Empty;
             transactionalStorage.Batch(actions =>
@@ -74,6 +73,12 @@ namespace RavenMQ.Impl
                 result = actions.Messages.Enqueue(incomingMessage.Queue, DateTime.UtcNow.Add(incomingMessage.TimeToLive),
                                          ms.ToArray());
             });
+            MessageEnqueuedTriggers.Apply(
+                enqueuedTrigger => transactionalStorage.ExecuteImmediatelyOrRegisterForSyncronization(
+                    enqueuedTrigger, 
+                    incomingMessage,
+                    msgs => MessageEnqueuedTriggers.Apply(x => x.AfterCommit(msgs.Cast<IncomingMessage>()))
+                    ));
             return result;
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using RavenMQ.Impl;
 
 namespace RavenMQ.Storage
@@ -7,12 +8,15 @@ namespace RavenMQ.Storage
     {
         public StorageActionsAccessor(QueuesStorage queuesStroage, IUuidGenerator uuidGenerator)
         {
+            Items = new Dictionary<object, List<object>>();
             Queues = new QueuesStorageActions(queuesStroage.Queues);
             Messages = new MessagesStorageActions(queuesStroage.Messages, Queues, uuidGenerator);
             General = new GeneralStorageActions(queuesStroage.Identity);
         }
 
         public QueuesStorageActions Queues { get; set; }
+
+        public IDictionary<object, List<object>> Items { get; private set; }
 
         public event Action OnCommit;
 

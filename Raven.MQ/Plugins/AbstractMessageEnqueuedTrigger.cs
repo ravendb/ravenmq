@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Newtonsoft.Json.Linq;
 using Raven.Abstractions.Data;
@@ -41,6 +43,15 @@ namespace RavenMQ.Plugins
         /// <returns>Potentially modified message data</returns>
         public virtual void BeforeMessageEnqueued(IncomingMessage message)
         {
+        }
+
+        /// <summary>
+        /// Happens after a commit was committed.
+        /// More than one message may have been committed in a single transaction, and we get all of them as a single unit.
+        /// </summary>
+        public virtual void AfterCommit(IEnumerable<IncomingMessage> messages)
+        {
+            
         }
     }
 }
