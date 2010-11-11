@@ -36,12 +36,13 @@ namespace RavenMQ.Storage
         {
             var key = new JObject
             {
-                { "Queue", queue },
                 { "MsgId", after.ToByteArray() }
             };
-            var result = messages["ByQueueNameAndMsgId"].SkipAfter(key)
+            var result = messages["ByMsgId"].SkipAfter(key)
                 .Where(x=>
                 {
+                    if (new PathComaparable(x.Value<string>("Queue")).CompareTo(queue) != 0)
+                        return false;
                     var dateTime = x.Value<DateTime?>("HideUntil");
                     if (dateTime == null)
                         return true;
