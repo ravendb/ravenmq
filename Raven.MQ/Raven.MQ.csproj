@@ -58,9 +58,12 @@
     <Compile Include="Config\RavenConfiguration.cs" />
     <Compile Include="Extensions\IOExtensions.cs" />
     <Compile Include="Extensions\JsonExtensions.cs" />
+    <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="Extensions\MetadataExtensions.cs" />
     <Compile Include="Impl\Queues.cs" />
     <Compile Include="IQueues.cs" />
+    <Compile Include="Plugins\AbstractMessageEnqueuedTrigger.cs" />
+    <Compile Include="Plugins\MessageVeto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Impl\IUuidGenerator.cs" />
     <Compile Include="Server\QueuesHttpServer.cs" />
@@ -79,6 +82,11 @@
     <Compile Include="Storage\StorageActionsAccessor.cs" />
     <Compile Include="Storage\TransactionalStorage.cs" />
     <Compile Include="Storage\TransactionMode.cs" />
+    <Compile Include="Subscriptions\ISubscription.cs" />
+    <Compile Include="Subscriptions\ISubscriptionsSource.cs" />
+    <Compile Include="Subscriptions\SubscriptionFilterInfo.cs" />
+    <Compile Include="Subscriptions\SubscriptionNotifierMessageEnqueueTrigger.cs" />
+    <Compile Include="Subscriptions\SubscriptionsSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Modules\Munin\Raven.Munin\Raven.Munin.csproj">
