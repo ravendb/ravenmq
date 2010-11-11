@@ -7,9 +7,10 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
+using Raven.Abstractions.Extensions;
+using Raven.Abstractions.Json;
 using Raven.Http.Abstractions;
 using Raven.Http.Exceptions;
-using Raven.Http.Json;
 
 namespace Raven.Http.Extensions
 {

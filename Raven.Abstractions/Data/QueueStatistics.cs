@@ -1,4 +1,4 @@
-﻿namespace RavenMQ.Data
+﻿namespace Raven.Abstractions.Data
 {
     public class QueueStatistics
     {

@@ -11,6 +11,7 @@ using System.Threading;
 using log4net;
 using Newtonsoft.Json;
 using System.Linq;
+using Raven.Abstractions.Exceptions;
 using Raven.Http.Abstractions;
 using Raven.Http.Exceptions;
 using Raven.Http.Extensions;

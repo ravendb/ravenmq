@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Newtonsoft.Json.Linq;
+using Raven.Abstractions.Data;
 using Raven.Http;
 using RavenMQ.Config;
-using RavenMQ.Data;
 using RavenMQ.Extensions;
 using RavenMQ.Storage;
 

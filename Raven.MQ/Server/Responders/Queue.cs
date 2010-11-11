@@ -1,7 +1,8 @@
 using System;
+using Raven.Abstractions.Data;
+using Raven.Abstractions.Extensions;
 using Raven.Http.Abstractions;
 using Raven.Http.Extensions;
-using RavenMQ.Data;
 using RavenMQ.Extensions;
 
 namespace RavenMQ.Server.Responders

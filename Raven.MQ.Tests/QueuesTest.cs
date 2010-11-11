@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
-using RavenMQ;
-using RavenMQ.Data;
+using Raven.Abstractions.Data;
 using Xunit;
 
 namespace Raven.MQ.Tests

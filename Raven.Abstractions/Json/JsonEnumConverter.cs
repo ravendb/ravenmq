@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Raven.Http.Json
+namespace Raven.Abstractions.Json
 {
 	/// <summary>
 	/// Convert an enum to a json string

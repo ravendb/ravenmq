@@ -1,8 +1,8 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
+using Raven.Abstractions.Data;
 using Raven.Munin;
 using System.Linq;
-using RavenMQ.Data;
 using RavenMQ.Impl;
 
 namespace RavenMQ.Storage

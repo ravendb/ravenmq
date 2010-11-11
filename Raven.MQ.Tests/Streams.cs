@@ -1,5 +1,5 @@
 using System;
-using RavenMQ.Data;
+using Raven.Abstractions.Data;
 using Xunit;
 using System.Linq;
 

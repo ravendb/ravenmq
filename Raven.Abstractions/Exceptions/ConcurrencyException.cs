@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Raven.Http.Exceptions
+namespace Raven.Abstractions.Exceptions
 {
 	/// <summary>
 	/// This exception is raised when a concurrency conflict is encountered

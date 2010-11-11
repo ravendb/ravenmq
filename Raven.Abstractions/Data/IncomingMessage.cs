@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
 
-namespace RavenMQ.Data
+namespace Raven.Abstractions.Data
 {
     public class IncomingMessage
     {
