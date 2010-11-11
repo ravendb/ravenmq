@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -9,7 +10,9 @@ using Raven.Abstractions.Data;
 using Raven.Http;
 using RavenMQ.Config;
 using RavenMQ.Extensions;
+using RavenMQ.Plugins;
 using RavenMQ.Storage;
+using RavenMQ.Subscriptions;
 
 namespace RavenMQ.Impl
 {
@@ -19,6 +22,11 @@ namespace RavenMQ.Impl
         private readonly InMemroyRavenConfiguration configuration;
         private readonly TransactionalStorage transactionalStorage;
         private long currentEtagBase;
+
+        [ImportMany]
+        public IEnumerable<AbstractMessageEnqueuedTrigger> MessageEnqueuedTriggers { get; set; }
+
+
 
         public Queues(InMemroyRavenConfiguration configuration)
         {
@@ -34,21 +42,34 @@ namespace RavenMQ.Impl
                 throw;
             }
             transactionalStorage.Batch(actions => currentEtagBase = actions.General.GetNextIdentityValue("Raven/Etag"));
+
+            Subscriptions = new SubscriptionsSource();
+
+            configuration.Container.SatisfyImportsOnce(this);
+
+            MessageEnqueuedTriggers.Apply(x=>x.Initialize(this));
         }
 
         #region IQueues Members
 
+        public ISubscriptionsSource Subscriptions { get; private set; }
+
         public Guid Enqueue(IncomingMessage incomingMessage)
         {
             AssertValidQueuePath(incomingMessage.Queue);
-            var bytes = incomingMessage.Metadata.ToBytes();
-            var ms = new MemoryStream(bytes.Length + incomingMessage.Data.Length);
-            ms.Write(bytes, 0, bytes.Length);
-            ms.Write(incomingMessage.Data, 0, incomingMessage.Data.Length);
 
+           
             Guid result = Guid.Empty;
             transactionalStorage.Batch(actions =>
             {
+                MessageEnqueuedTriggers.Apply(trigger => trigger.BeforeMessageEnqueued(incomingMessage));
+
+                var bytes = incomingMessage.Metadata.ToBytes();
+                var ms = new MemoryStream(bytes.Length + incomingMessage.Data.Length);
+                ms.Write(bytes, 0, bytes.Length);
+                ms.Write(incomingMessage.Data, 0, incomingMessage.Data.Length);
+
+
                 actions.Queues.IncrementMessageCount(incomingMessage.Queue);
                 result = actions.Messages.Enqueue(incomingMessage.Queue, DateTime.UtcNow.Add(incomingMessage.TimeToLive),
                                          ms.ToArray());

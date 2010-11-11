@@ -14,8 +14,17 @@ namespace RavenMQ.Storage
 
         public QueuesStorageActions Queues { get; set; }
 
+        public event Action OnCommit;
+
         public GeneralStorageActions General { get; set; }
 
         public MessagesStorageActions Messages { get; set; }
+
+        public void InvokeOnCommit()
+        {
+            var handler = OnCommit;
+            if (handler != null) 
+                handler();
+        }
     }
 }

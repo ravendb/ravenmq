@@ -60,12 +60,15 @@ namespace RavenMQ.Storage
             try
             {
                 Interlocked.Exchange(ref lastUsageTime, DateTime.Now.ToBinary());
+                StorageActionsAccessor storageActionsAccessor;
                 using (queuesStroage.BeginTransaction())
                 {
-                    current.Value = new StorageActionsAccessor(queuesStroage, uuidGenerator);
+                    storageActionsAccessor = new StorageActionsAccessor(queuesStroage, uuidGenerator);
+                    current.Value = storageActionsAccessor;
                     action(current.Value);
                     queuesStroage.Commit();
                 }
+                storageActionsAccessor.InvokeOnCommit();
             }
             finally
             {
@@ -114,6 +117,15 @@ namespace RavenMQ.Storage
             queuesStroage.PerformIdleTasks();
         }
 
+        public void ExecuteImmediatelyOrRegisterForSyncronization(Action action)
+        {
+            if (current.Value == null)
+            {
+                action();
+                return;
+            }
+            current.Value.OnCommit += action;
+        }
         public Guid Id { get; private set; }
     }
 }
