@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using Raven.Abstractions.Commands;
 using Raven.Abstractions.Data;
 using Xunit;
+using System.Linq;
 
 namespace Raven.MQ.Tests
 {
@@ -31,8 +32,18 @@ namespace Raven.MQ.Tests
                     }
                 });
 
-            Assert.NotNull(queues.Read("/queues/abc", Guid.Empty));
-            Assert.NotNull(queues.Read("/queues/cba", Guid.Empty));
+            Assert.NotNull(queues.Read(new ReadRequest
+            {
+                LastMessageId = Guid.Empty,
+                Queue = "/queues/abc"
+            }).Results.FirstOrDefault());
+
+            Assert.NotNull(queues.Read(new ReadRequest
+            {
+                LastMessageId = Guid.Empty,
+                Queue = "/queues/cba"
+                
+            }).Results.FirstOrDefault());
         }
 
         [Fact]
@@ -60,15 +71,24 @@ namespace Raven.MQ.Tests
 
             var cbaQ = new ReadCommand
             {
-                LastMessageId = Guid.Empty,
-                Queue = "/queues/cba",
+                ReadRequest =
+                    {
+                        LastMessageId = Guid.Empty,
+                        Queue = "/queues/cba",
+                    }
             };
             var abcQ = new ReadCommand
             {
-                Queue = "/queues/abc",
-                LastMessageId = Guid.Empty
+                ReadRequest =
+                {
+                    Queue = "/queues/abc",
+                    LastMessageId = Guid.Empty
+                }
             };
             queues.Batch(abcQ,cbaQ);
+
+            Assert.NotEmpty(abcQ.Result.Results);
+            Assert.NotEmpty(cbaQ.Result.Results);
         }
     }
 }

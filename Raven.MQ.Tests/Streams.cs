@@ -16,7 +16,10 @@ namespace Raven.MQ.Tests
                 Data = new byte[]{1,2,3},
             });
 
-            Assert.NotNull(queues.Read("/streams/customers/1234", Guid.Empty).First());
+            Assert.NotNull(queues.Read(new ReadRequest
+            {
+                Queue = "/streams/customers/1234",
+            }).Results.First());
         }
 
         [Fact]
@@ -28,13 +31,22 @@ namespace Raven.MQ.Tests
                 Data = new byte[] { 1, 2, 3 },
             });
 
-            var outgoingMessage = queues.Read("/streams/customers/1234", Guid.Empty).First();
+            var outgoingMessage = queues.Read(new ReadRequest
+            {
+                Queue = "/streams/customers/1234",
+            }).Results.First();
             queues.ConsumeMessage(outgoingMessage.Id);
             Assert.NotNull(outgoingMessage);
             queues.ConsumeMessage(outgoingMessage.Id);
-            Assert.NotNull(queues.Read("/streams/customers/1234", Guid.Empty).First());
+            Assert.NotNull(queues.Read(new ReadRequest
+            {
+                Queue = "/streams/customers/1234",
+            }).Results.FirstOrDefault());
             queues.ConsumeMessage(outgoingMessage.Id);
-            Assert.NotNull(queues.Read("/streams/customers/1234", Guid.Empty).First());
+            Assert.NotNull(queues.Read(new ReadRequest
+            {
+                Queue = "/streams/customers/1234",
+            }).Results.FirstOrDefault());
         }
     }
 }

@@ -1,7 +1,9 @@
 using System;
+using Raven.Abstractions.Data;
 using Raven.Http.Abstractions;
 using Raven.Http.Extensions;
 using System.Linq;
+using RavenMQ.Impl;
 
 namespace RavenMQ.Server.Responders
 {
@@ -24,8 +26,15 @@ namespace RavenMQ.Server.Responders
             var queue = match.Groups[1].Value;
             var etag = context.GetEtagFromQueryString() ?? Guid.Empty;
             var pageSize = context.GetPageSize(Configuration.MaxPageSize);
+            TimeSpan timeout = context.GetTimeout(TimeSpan.FromMinutes(3));
 
-            context.WriteJson(Queues.Read(queue, etag).Take(pageSize));
+            context.WriteJson(Queues.Read(new ReadRequest
+            {
+              HideTimeout  = timeout,
+              LastMessageId = etag,
+              PageSize = pageSize,
+              Queue = queue
+            }));
         }
     }
 }

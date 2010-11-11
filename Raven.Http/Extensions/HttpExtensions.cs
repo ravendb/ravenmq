@@ -253,6 +253,14 @@ namespace Raven.Http.Extensions
 			return pageSize;
 		}
 
+        public static TimeSpan GetTimeout(this IHttpContext context, TimeSpan defaultValue)
+        {
+            TimeSpan val;
+            if (TimeSpan.TryParse(context.Request.QueryString["timeout"], out val) == false)
+                return defaultValue;
+            return val;
+        }
+
         public static DateTime? GetCutOff(this IHttpContext context)
         {
             var etagAsString = context.Request.QueryString["cutOff"];

@@ -57,6 +57,8 @@
     <Compile Include="Data\IncomingMessage.cs" />
     <Compile Include="Data\OutgoingMessage.cs" />
     <Compile Include="Data\QueueStatistics.cs" />
+    <Compile Include="Data\ReadRequest.cs" />
+    <Compile Include="Data\ReadResults.cs" />
     <Compile Include="Data\TransactionInformation.cs" />
     <Compile Include="Exceptions\ConcurrencyException.cs" />
     <Compile Include="Extensions\StreamExtension.cs" />

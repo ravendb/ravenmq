@@ -16,7 +16,10 @@ namespace Raven.MQ.Tests
                 Data = new byte[] {1, 2, 3, 4}
             });
 
-            var msg = queues.Read("/queues/mailboxes/1234", Guid.Empty).First();
+            var msg = queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes/1234",
+            }).Results.First();
 
             Assert.NotNull(msg);
             Assert.Equal("/queues/mailboxes/1234", msg.Queue);
@@ -26,7 +29,10 @@ namespace Raven.MQ.Tests
         [Fact]
         public void When_reading_empty_queue_will_return_empty_set()
         {
-            var count = queues.Read("/queues/mailboxes/1234", Guid.Empty).Count();
+            var count = queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes/1234",
+            }).Results.Count();
 
             Assert.Equal(0, count);
         }
@@ -41,7 +47,10 @@ namespace Raven.MQ.Tests
                 Data = new byte[] {1, 2, 3, 4}
             });
 
-            var msg = queues.Read("/queues/mailboxes/1234", Guid.Empty).First();
+            var msg = queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes/1234",
+            }).Results.First();
 
             Assert.NotNull(msg);
             Assert.Equal("/queues/mailboxes/1234", msg.Queue);

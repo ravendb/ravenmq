@@ -88,7 +88,7 @@ namespace RavenMQ.Impl
                             break;
                         case CommandType.Read:
                             var readCmd = (ReadCommand) command;
-                            readCmd.Results = Read(readCmd.Queue, readCmd.LastMessageId, readCmd.HideTimeout);
+                            readCmd.Result = Read(readCmd.ReadRequest);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
@@ -97,23 +97,19 @@ namespace RavenMQ.Impl
             });
         }
 
-        public IEnumerable<OutgoingMessage> Read(string queue, Guid lastMessageId)
+        public ReadResults Read(ReadRequest readRequest)
         {
-            return Read(queue, lastMessageId, TimeSpan.FromMinutes(3));
-        }
-
-        public IEnumerable<OutgoingMessage> Read(string queue, Guid lastMessageId, TimeSpan hideTimeout)
-        {
+            bool hasMoreItems = false;
             var msgs = new List<OutgoingMessage>();
+            var maxPageSize = Math.Max(configuration.MaxPageSize, readRequest.PageSize);
             transactionalStorage.Batch(actions =>
             {
-                
-                var outgoingMessage = actions.Messages.Dequeue(queue, lastMessageId);
-                while (outgoingMessage != null && msgs.Count < configuration.MaxPageSize)
+                var outgoingMessage = actions.Messages.Dequeue(readRequest.Queue, readRequest.LastMessageId);
+                while (outgoingMessage != null && msgs.Count < maxPageSize)
                 {
                     if(ShouldConsumeMessage(outgoingMessage.Expiry,outgoingMessage.Queue))
                     {
-                        actions.Messages.HideMessageFor(outgoingMessage.Id, hideTimeout);
+                        actions.Messages.HideMessageFor(outgoingMessage.Id, readRequest.HideTimeout);
                     }
                     if (ShouldIncludeMessage(outgoingMessage))
                     {
@@ -124,10 +120,16 @@ namespace RavenMQ.Impl
                         Array.Copy(buffer, memoryStream.Position, outgoingMessage.Data, 0, outgoingMessage.Data.Length);
                         msgs.Add(outgoingMessage);
                     }
-                    outgoingMessage = actions.Messages.Dequeue(queue, outgoingMessage.Id);
+                    outgoingMessage = actions.Messages.Dequeue(readRequest.Queue, outgoingMessage.Id);
                 }
+
+                hasMoreItems = outgoingMessage != null;
             });
-            return msgs;
+            return new ReadResults
+            {
+                HasMoreResults = hasMoreItems,
+                Results = msgs
+            };
         }
 
         public QueueStatistics Statistics(string queue)

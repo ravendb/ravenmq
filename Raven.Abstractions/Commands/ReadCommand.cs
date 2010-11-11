@@ -6,14 +6,12 @@ namespace Raven.Abstractions.Commands
 {
     public class ReadCommand : ICommand
     {
-        public string Queue { get; set; }
-        public Guid LastMessageId { get; set; }
-        public TimeSpan HideTimeout { get; set; }
-        public IEnumerable<OutgoingMessage> Results { get; set; }
+        public ReadRequest ReadRequest { get; set; }
+        public ReadResults Result { get; set; }
 
         public ReadCommand()
         {
-            HideTimeout = TimeSpan.FromMinutes(3);
+            ReadRequest = new ReadRequest();
         }
 
         public CommandType Type

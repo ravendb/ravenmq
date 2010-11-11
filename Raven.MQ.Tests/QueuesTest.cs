@@ -16,9 +16,15 @@ namespace Raven.MQ.Tests
                 Data = new byte[] {1, 2, 3, 4}
             });
 
-            var outgoingMessage = queues.Read("/queues/mailboxes/1234", Guid.Empty).First();
+            var outgoingMessage = queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes/1234",
+            }).Results.First();
             queues.ConsumeMessage(outgoingMessage.Id);
-            Assert.Null(queues.Read("/queues/mailboxes/1234", Guid.Empty).FirstOrDefault());
+            Assert.Null(queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes/1234",
+            }).Results.FirstOrDefault());
             Assert.Equal(0, queues.Statistics("/queues/mailboxes/1234").NumberOfMessages);
         }
 
@@ -31,8 +37,14 @@ namespace Raven.MQ.Tests
                 Data = new byte[] { 1, 2, 3, 4 }
             });
 
-            queues.Read("/queues/mailboxes/1234", Guid.Empty).First();
-            Assert.Null(queues.Read("/queues/mailboxes/1234", Guid.Empty).FirstOrDefault());
+            queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes/1234",
+            });
+            Assert.Null(queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes/1234",
+            }).Results.FirstOrDefault());
             Assert.Equal(1, queues.Statistics("/queues/mailboxes/1234").NumberOfMessages);
         }
 
@@ -45,8 +57,15 @@ namespace Raven.MQ.Tests
                 Data = new byte[] { 1, 2, 3, 4 }
             });
 
-            queues.Read("/queues/mailboxes/1234", Guid.Empty, TimeSpan.FromSeconds(-1)).First();
-            Assert.NotNull(queues.Read("/queues/mailboxes/1234", Guid.Empty).FirstOrDefault());
+            queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes/1234",
+                HideTimeout = TimeSpan.FromSeconds(-1)
+            }).Results.First();
+            Assert.NotNull(queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes/1234",
+            }).Results.FirstOrDefault());
             Assert.Equal(1, queues.Statistics("/queues/mailboxes/1234").NumberOfMessages);
         }
 
@@ -60,7 +79,10 @@ namespace Raven.MQ.Tests
                 TimeToLive = TimeSpan.FromMinutes(-1)
             });
 
-            Assert.Null(queues.Read("/queues/mailboxes/1234", Guid.Empty).FirstOrDefault());
+            Assert.Null(queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes/1234",
+            }).Results.FirstOrDefault());
         }
 
         [Fact]
@@ -101,7 +123,10 @@ namespace Raven.MQ.Tests
                 TimeToLive = TimeSpan.FromMinutes(-1)
             });
 
-            Assert.Null(queues.Read("/queues/MAILBOXES/1234", Guid.Empty).FirstOrDefault());
+            Assert.Null(queues.Read(new ReadRequest
+            {
+                Queue = "/queues/MAILBOXES/1234",
+            }).Results.FirstOrDefault());
         }
 
         [Fact]
@@ -135,7 +160,10 @@ namespace Raven.MQ.Tests
                 Data = new byte[] { 1, 2, 3, 4 },
             });
 
-            Assert.NotNull(queues.Read("/queues/MAILBOXES", Guid.Empty).FirstOrDefault());
+            Assert.NotNull(queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes",
+            }).Results.FirstOrDefault());
         }
 
         [Fact]
@@ -147,7 +175,10 @@ namespace Raven.MQ.Tests
                 Data = new byte[] { 1, 2, 3, 4 },
             });
 
-            Assert.Null(queues.Read("/queues/mailboxes/54321", Guid.Empty).FirstOrDefault());
+            Assert.Null(queues.Read(new ReadRequest
+            {
+                Queue = "/queues/mailboxes/4321",
+            }).Results.FirstOrDefault());
         }
     }
 }

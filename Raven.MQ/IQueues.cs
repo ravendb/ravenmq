@@ -9,8 +9,8 @@ namespace RavenMQ
     public interface IQueues : IResourceStore
     {
         Guid Enqueue(IncomingMessage incomingMessage);
-        IEnumerable<OutgoingMessage> Read(string queue, Guid lastMessageId);
-        IEnumerable<OutgoingMessage> Read(string queue, Guid lastMessageId, TimeSpan hideTimeout);
+
+        ReadResults Read(ReadRequest readRequest);
         QueueStatistics Statistics(string queue);
         void ConsumeMessage(Guid msgId);
 
