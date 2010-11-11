@@ -50,6 +50,7 @@
     <Compile Include="QueuesTest.cs" />
     <Compile Include="SimpleMessages.cs" />
     <Compile Include="Streams.cs" />
+    <Compile Include="Subscriptions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Raven.Abstractions\Raven.Abstractions.csproj">

@@ -126,10 +126,12 @@ namespace RavenMQ.Storage
                 return;
             }
             List<object> list;
-            if (current.Value.Items.TryGetValue(indexer, out list) == false)
+            var alreadyExists = current.Value.Items.TryGetValue(indexer, out list);
+            if (alreadyExists == false)
                 current.Value.Items[indexer] = list = new List<object>();
             list.Add(state);
-            current.Value.OnCommit += () => action(list);
+            if (alreadyExists == false)
+                current.Value.OnCommit += () => action(list);
         }
 
         public Guid Id { get; private set; }
