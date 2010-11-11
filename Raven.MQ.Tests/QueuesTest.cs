@@ -17,7 +17,8 @@ namespace Raven.MQ.Tests
                 Data = new byte[] {1, 2, 3, 4}
             });
 
-            queues.Read("/queues/mailboxes/1234", Guid.Empty).First();
+            var outgoingMessage = queues.Read("/queues/mailboxes/1234", Guid.Empty).First();
+            queues.ConsumeMessage(outgoingMessage.Id);
             Assert.Null(queues.Read("/queues/mailboxes/1234", Guid.Empty).FirstOrDefault());
         }
 

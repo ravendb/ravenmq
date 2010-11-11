@@ -66,9 +66,10 @@
     <Compile Include="Impl\IUuidGenerator.cs" />
     <Compile Include="Data\QueueStatistics.cs" />
     <Compile Include="Server\QueuesHttpServer.cs" />
+    <Compile Include="Server\Responders\Messages.cs" />
     <Compile Include="Server\Responders\Queue.cs" />
     <Compile Include="Server\Responders\QueuesRoot.cs" />
-    <Compile Include="Server\Responders\QueuesResponder.cs" />
+    <Compile Include="Server\Responders\AbstractQueuesResponder.cs" />
     <Compile Include="Storage\GeneralStorageActions.cs" />
     <Compile Include="Storage\IStorageActionsAccessor.cs" />
     <Compile Include="Storage\ITransactionalStorage.cs" />

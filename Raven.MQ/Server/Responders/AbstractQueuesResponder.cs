@@ -4,7 +4,7 @@ using RavenMQ.Impl;
 
 namespace RavenMQ.Server.Responders
 {
-    public abstract class QueuesResponder : AbstractRequestResponder
+    public abstract class AbstractQueuesResponder : AbstractRequestResponder
     {
         public Queues Queues
         {

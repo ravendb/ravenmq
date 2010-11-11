@@ -86,15 +86,24 @@ namespace Raven.Http.Extensions
 
 		public static void WriteJson(this IHttpContext context, JToken obj)
 		{
+            JsonWriter writer;
+		    var acceptHeader = context.Request.Headers["Accept"];
+            if (acceptHeader != null && acceptHeader.Contains("application/bson"))
+            {
+                writer = new BsonWriter(context.Response.OutputStream);
+            }
+            else
+            {
+                var streamWriter = new StreamWriter(context.Response.OutputStream, Encoding.UTF8);
+                writer = new JsonTextWriter(streamWriter)
+                {
+                    Formatting = Formatting.None
+                };
+            }
 			context.Response.Headers["Content-Type"] = "application/json; charset=utf-8";
-			var streamWriter = new StreamWriter(context.Response.OutputStream, Encoding.UTF8);
-			var jsonTextWriter = new JsonTextWriter(streamWriter)
-			{
-				Formatting = Formatting.None
-			};
-			obj.WriteTo(jsonTextWriter, new JsonEnumConverter());
-			jsonTextWriter.Flush();
-			streamWriter.Flush();
+			
+			obj.WriteTo(writer, new JsonEnumConverter());
+			writer.Flush();
 		}
 
 		public static void WriteData(this IHttpContext context, JObject data, JObject headers, Guid etag)

@@ -10,11 +10,13 @@ namespace RavenMQ.Storage
     public class MessagesStorageActions
     {
         private readonly Table messages;
+        private readonly QueuesStorageActions queuesStorageActions;
         private readonly IUuidGenerator uuidGenerator;
 
-        public MessagesStorageActions(Table messages, IUuidGenerator uuidGenerator)
+        public MessagesStorageActions(Table messages, QueuesStorageActions queuesStorageActions, IUuidGenerator uuidGenerator)
         {
             this.messages = messages;
+            this.queuesStorageActions = queuesStorageActions;
             this.uuidGenerator = uuidGenerator;
         }
 
@@ -52,9 +54,20 @@ namespace RavenMQ.Storage
             };
         }
 
-        public void ConsumeMessage(Guid msgId)
+        public void ConsumeMessage(Guid msgId, Func<DateTime, string, bool> shouldConsumeMessage)
         {
-            messages.Remove(new JObject { { "MsgId", msgId.ToByteArray() } });
+            var key = new JObject { { "MsgId", msgId.ToByteArray() } };
+            var readResult = messages.Read(key);
+            if (readResult == null)
+                return;
+
+            var queue = readResult.Key.Value<string>("Queue");
+            var epxiry = readResult.Key.Value<DateTime>("Expiry");
+            if (shouldConsumeMessage(epxiry, queue) == false)
+                return;
+            messages.Remove(key);
+            queuesStorageActions.DecrementMessageCount(queue);
         }
+
     }
 }

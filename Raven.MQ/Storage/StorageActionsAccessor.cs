@@ -7,9 +7,9 @@ namespace RavenMQ.Storage
     {
         public StorageActionsAccessor(QueuesStorage queuesStroage, IUuidGenerator uuidGenerator)
         {
-            Messages = new MessagesStorageActions(queuesStroage.Messages, uuidGenerator);
-            General = new GeneralStorageActions(queuesStroage.Identity);
             Queues = new QueuesStorageActions(queuesStroage.Queues);
+            Messages = new MessagesStorageActions(queuesStroage.Messages, Queues, uuidGenerator);
+            General = new GeneralStorageActions(queuesStroage.Identity);
         }
 
         public QueuesStorageActions Queues { get; set; }

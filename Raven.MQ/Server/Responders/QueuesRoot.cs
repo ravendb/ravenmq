@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace RavenMQ.Server.Responders
 {
-    public class QueuesRoot : QueuesResponder
+    public class QueuesRoot : AbstractQueuesResponder
     {
         public override string UrlPattern
         {

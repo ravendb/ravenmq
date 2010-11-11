@@ -64,19 +64,20 @@ namespace RavenMQ.Impl
             throw new ArgumentException("Queue name does not starts with '/queues/' or '/streams/' or '/remotes/'");
         }
 
+        public void ConsumeMessage(Guid msgId)
+        {
+            transactionalStorage.Batch(actions=> actions.Messages.ConsumeMessage(msgId, ShouldConsumeMessage));
+        }
+
         public IEnumerable<OutgoingMessage> Read(string queue, Guid lastMessageId)
         {
             var msgs = new List<OutgoingMessage>();
             transactionalStorage.Batch(actions =>
             {
+                
                 var outgoingMessage = actions.Messages.Dequeue(queue, lastMessageId);
                 while (outgoingMessage != null && msgs.Count < configuration.MaxPageSize)
                 {
-                    if (ShouldConsumeMessage(outgoingMessage))
-                    {
-                        actions.Queues.DecrementMessageCount(outgoingMessage.Queue);
-                        actions.Messages.ConsumeMessage(outgoingMessage.Id);
-                    }
                     if (ShouldIncludeMessage(outgoingMessage))
                     {
                         var buffer = outgoingMessage.Data;
@@ -139,11 +140,11 @@ namespace RavenMQ.Impl
             return msg.Expiry > DateTime.UtcNow;
         }
 
-        private static bool ShouldConsumeMessage(OutgoingMessage msg)
+        private static bool ShouldConsumeMessage(DateTime expiry, string queue)
         {
-            if (DateTime.UtcNow > msg.Expiry)
+            if (DateTime.UtcNow > expiry)
                 return true;
-            return msg.Queue.StartsWith("/queues", StringComparison.InvariantCultureIgnoreCase);
+            return queue.StartsWith("/queues", StringComparison.InvariantCultureIgnoreCase);
         }
 
         public IRaveHttpnConfiguration Configuration

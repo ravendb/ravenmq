@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Raven.Http.Abstractions;
 using Raven.Http.Extensions;
 using RavenMQ.Data;
@@ -7,7 +6,7 @@ using RavenMQ.Extensions;
 
 namespace RavenMQ.Server.Responders
 {
-    public class Queue : QueuesResponder
+    public class Queue : AbstractQueuesResponder
     {
         public override string UrlPattern
         {

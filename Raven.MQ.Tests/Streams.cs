@@ -28,8 +28,12 @@ namespace Raven.MQ.Tests
                 Data = new byte[] { 1, 2, 3 },
             });
 
+            var outgoingMessage = queues.Read("/streams/customers/1234", Guid.Empty).First();
+            queues.ConsumeMessage(outgoingMessage.Id);
+            Assert.NotNull(outgoingMessage);
+            queues.ConsumeMessage(outgoingMessage.Id);
             Assert.NotNull(queues.Read("/streams/customers/1234", Guid.Empty).First());
-            Assert.NotNull(queues.Read("/streams/customers/1234", Guid.Empty).First());
+            queues.ConsumeMessage(outgoingMessage.Id);
             Assert.NotNull(queues.Read("/streams/customers/1234", Guid.Empty).First());
         }
     }
