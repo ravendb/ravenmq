@@ -49,8 +49,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\CommandType.cs" />
     <Compile Include="Commands\ConsumeCommand.cs" />
     <Compile Include="Commands\EnqueueCommand.cs" />
+    <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\ReadCommand.cs" />
     <Compile Include="Data\IncomingMessage.cs" />
     <Compile Include="Data\OutgoingMessage.cs" />

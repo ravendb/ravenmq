@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Newtonsoft.Json.Linq;
+using Raven.Abstractions.Commands;
 using Raven.Abstractions.Data;
 using Raven.Http;
 using RavenMQ.Config;
@@ -67,6 +68,33 @@ namespace RavenMQ.Impl
         public void ConsumeMessage(Guid msgId)
         {
             transactionalStorage.Batch(actions=> actions.Messages.ConsumeMessage(msgId, ShouldConsumeMessage));
+        }
+
+        public void Batch(params ICommand[] commands)
+        {
+            transactionalStorage.Batch(_ =>
+            {
+                foreach (var command in commands)
+                {
+                    switch (command.Type)
+                    {
+                        case CommandType.Consume:
+                            var consumeCmd = (ConsumeCommand) command;
+                            ConsumeMessage(consumeCmd.MessageId);
+                            break;
+                        case CommandType.Enqueue:
+                            var enqueueCmd = (EnqueueCommand) command;
+                            enqueueCmd.MessageId = Enqueue(enqueueCmd.Message);
+                            break;
+                        case CommandType.Read:
+                            var readCmd = (ReadCommand) command;
+                            readCmd.Results = Read(readCmd.Queue, readCmd.LastMessageId, readCmd.HideTimeout);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+            });
         }
 
         public IEnumerable<OutgoingMessage> Read(string queue, Guid lastMessageId)
