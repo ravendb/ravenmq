@@ -62,8 +62,7 @@ namespace RavenMQ.Network
                 {
                     ListenForReuqests(); // starts listening for new requests
 
-                    var socket = socketTask.Result;
-                    ReadBuffer(socket, 1024 /* the headshake is smaller than 1,024 bytes */)
+                    socketTask.Result.ReadBuffer(1024 /* the headshake is smaller than 1,024 bytes */)
                         .ContinueWith<WebSocketConnection>(ParseClientRequest)
                         .ContinueWith(task =>
                         {
@@ -82,14 +81,7 @@ namespace RavenMQ.Network
         {
             var webSocketConnection = arg.Result;
 
-            int result1 = CalculatePartialResult(arg.Result.SecWebSocketKey1);
-            int result2 = CalculatePartialResult(arg.Result.SecWebSocketKey2);
-
-            var buffer = new byte[16];
-
-            Array.Copy(buffer, 0, BitConverter.GetBytes(result1), 0, 4);
-            Array.Copy(buffer, 4, BitConverter.GetBytes(result2), 0, 4);
-            Array.Copy(buffer, webSocketConnection.ChallengeBytes, 8);
+            byte[] buffer = CalculateSignature(arg.Result.SecWebSocketKey1, arg.Result.SecWebSocketKey2, webSocketConnection.ChallengeBytes);
 
 
             var sb = new StringBuilder();
@@ -109,7 +101,20 @@ namespace RavenMQ.Network
                 bytes.AddRange(md5.ComputeHash(buffer));
 
 
-            return WriteBuffer(webSocketConnection, buffer);
+            return webSocketConnection.Socket.WriteBuffer(bytes.ToArray(), webSocketConnection);
+        }
+
+        public static byte[] CalculateSignature(string secWebSocketKey1, string secWebSocketKey2, byte[] challengeBytes)
+        {
+            int result1 = CalculatePartialResult(secWebSocketKey1);
+            int result2 = CalculatePartialResult(secWebSocketKey2);
+
+            var buffer = new byte[16];
+
+            Array.Copy(buffer, 0, BitConverter.GetBytes(result1), 0, 4);
+            Array.Copy(buffer, 4, BitConverter.GetBytes(result2), 0, 4);
+            Array.Copy(buffer, challengeBytes, 8);
+            return buffer;
         }
 
         private static int CalculatePartialResult(IEnumerable<char> secWebSocket)
@@ -161,65 +166,6 @@ namespace RavenMQ.Network
             con.ChallengeBytes = new byte[8];
             Array.Copy(bufferTask.Result.Item2, bufferTask.Result.Item3 - 8, con.ChallengeBytes, 0, 8);
             return con;
-        }
-
-        private static Task<Tuple<Socket, byte[], int>> ReadBuffer(Socket socket, int bufferSize)
-        {
-            var completionSource = new TaskCompletionSource<Tuple<Socket, byte[], int>>();
-            var buffer = new byte[bufferSize];
-            var start = 0;
-            AsyncCallback callback = null;
-            callback = ar =>
-            {
-                int read;
-                try
-                {
-                    read = socket.EndReceive(ar);
-                    start += read;
-                }
-                catch (Exception e)
-                {
-                    completionSource.SetException(e);
-                    return;
-                }
-                if (read == 0)
-                {
-                    completionSource.SetResult(Tuple.Create(socket, buffer, start));
-                }
-                socket.BeginReceive(buffer, start, bufferSize - start, SocketFlags.None, callback, null);
-            };
-            socket.BeginReceive(buffer, start, bufferSize - start, SocketFlags.None, callback, null);
-
-            return completionSource.Task;
-        }
-
-        private static Task<WebSocketConnection> WriteBuffer(WebSocketConnection webSocketConnection, byte[] buffer)
-        {
-            var completionSource = new TaskCompletionSource<WebSocketConnection>();
-            var start = 0;
-            AsyncCallback callback = null;
-            callback = ar =>
-            {
-                int read;
-                try
-                {
-                    read = webSocketConnection.Socket.EndSend(ar);
-                    start += read;
-                }
-                catch (Exception e)
-                {
-                    completionSource.SetException(e);
-                    return;
-                }
-                if (read == 0)
-                {
-                    completionSource.SetResult(webSocketConnection);
-                }
-                webSocketConnection.Socket.BeginSend(buffer, start, buffer.Length - start, SocketFlags.None, callback, null);
-            };
-            webSocketConnection.Socket.BeginSend(buffer, start, buffer.Length - start, SocketFlags.None, callback, null);
-
-            return completionSource.Task;
         }
     }
 }
