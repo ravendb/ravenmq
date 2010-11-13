@@ -62,6 +62,8 @@
     <Compile Include="Extensions\MetadataExtensions.cs" />
     <Compile Include="Impl\Queues.cs" />
     <Compile Include="IQueues.cs" />
+    <Compile Include="Network\WebSocketConnection.cs" />
+    <Compile Include="Network\WebSocketsServer.cs" />
     <Compile Include="Plugins\AbstractMessageEnqueuedTrigger.cs" />
     <Compile Include="Plugins\MessageVeto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
