@@ -16,7 +16,7 @@ namespace RavenMQ.Network
         private static readonly Regex httpFields = new Regex(@"([^:\s]+):\s([^\r\n]+)",
                                                              RegexOptions.Compiled | RegexOptions.Singleline);
 
-        private static readonly Regex httpParameters = new Regex(@"([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*",
+        private static readonly Regex httpParameters = new Regex(@"([^\s]+)\s+([^\s]+)\s+(HTTP/1\.[10])\s*",
                                                                  RegexOptions.Compiled | RegexOptions.Singleline);
 
         private ConcurrentBag<WebSocketConnection> socketConnections = new ConcurrentBag<WebSocketConnection>();
@@ -41,28 +41,32 @@ namespace RavenMQ.Network
 
         #endregion
 
-        public void Start()
+        public Task Start()
         {
             listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
-            Task.Factory.FromAsync<string, IPAddress[]>(Dns.BeginGetHostAddresses, Dns.EndGetHostAddresses, host, null)
+            return Task.Factory.FromAsync<string, IPAddress[]>(Dns.BeginGetHostAddresses, Dns.EndGetHostAddresses, host, null)
                 .ContinueWith(addressesTask =>
                 {
                     foreach (var ipAddress in addressesTask.Result)
                     {
-                        listener.Bind(new IPEndPoint(ipAddress, port));
+                        if (ipAddress.AddressFamily != AddressFamily.InterNetworkV6)
+                            listener.Bind(new IPEndPoint(ipAddress, port));
                     }
-                    ListenForReuqests();
+
+                    listener.Listen(10);
+
+                    ListenForReuqests(listener);
                 });
         }
 
-        private Task ListenForReuqests()
+        private Task ListenForReuqests(Socket socket)
         {
-            return Task.Factory.FromAsync<Socket>(listener.BeginAccept, listener.EndAccept, null)
+            return Task.Factory.FromAsync<Socket>(socket.BeginAccept, socket.EndAccept, null)
                 .ContinueWith(socketTask =>
                 {
-                    ListenForReuqests(); // starts listening for new requests
+                    ListenForReuqests(socket); // starts listening for new requests
 
-                    socketTask.Result.ReadBuffer(1024 /* the headshake is smaller than 1,024 bytes */)
+                    socketTask.Result.ReadBuffer(1024 /* the headshake is smaller than 1,024 bytes */, Encoding.UTF8.GetBytes("\r\n\r\n"))
                         .ContinueWith<WebSocketConnection>(ParseClientRequest)
                         .ContinueWith(task =>
                         {
@@ -125,20 +129,51 @@ namespace RavenMQ.Network
 
         private static WebSocketConnection ParseClientRequest(Task<Tuple<Socket, byte[], int>> bufferTask)
         {
-            var clientRequest = Encoding.UTF8.GetString(bufferTask.Result.Item2, 0,
-                                                        bufferTask.Result.Item3 - 8
-                /* the last 8 bytes are for signature */);
-            var matches = httpFields.Matches(clientRequest);
+            var buferSize = bufferTask.Result.Item3;
+            var buffer = bufferTask.Result.Item2;
+            var socket = bufferTask.Result.Item1;
+            if(buferSize <= 8) // request too small
+            {
+                FailRequest(socket);
+                return null;
+            }
             var con = new WebSocketConnection
             {
                 Socket = bufferTask.Result.Item1,
             };
-            var httpParaemtersMatch = httpParameters.Match(clientRequest);
+            
+            var clientRequest = Encoding.UTF8.GetString(buffer, 0,
+                                                        buferSize - 8
+                /* the last 8 bytes are for signature */);
+            var firstLine = clientRequest.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            if(firstLine == null)
+            {
+                FailRequest(socket);
+                return null;
+            }
+            var httpParaemtersMatch = httpParameters.Match(firstLine);
             if (httpParaemtersMatch.Success)
             {
                 con.Method = httpParaemtersMatch.Groups[1].Value;
+                switch (con.Method)
+                {
+                    case "GET":
+                    case "POST":
+                    case "PUT":
+                    case "DELETE":
+                        break;
+                    default:
+                        FailRequest(socket);
+                        return null;
+                }
                 con.Location = httpParaemtersMatch.Groups[2].Value;
             }
+            else
+            {
+                FailRequest(socket);
+                return null;
+            }
+            var matches = httpFields.Matches(clientRequest);
             foreach (Match match in matches)
             {
                 switch (match.Groups[1].Value.ToLowerInvariant())
@@ -164,8 +199,14 @@ namespace RavenMQ.Network
                 }
             }
             con.ChallengeBytes = new byte[8];
-            Array.Copy(bufferTask.Result.Item2, bufferTask.Result.Item3 - 8, con.ChallengeBytes, 0, 8);
+            Array.Copy(bufferTask.Result.Item2, buferSize - 8, con.ChallengeBytes, 0, 8);
             return con;
+        }
+
+        private static void FailRequest(Socket socket)
+        {
+            socket.WriteBuffer(Encoding.UTF8.GetBytes(@"400 Bad Request\r\n\rn<p>Cannot understand request</p>"), 1)
+                .ContinueWith(task => socket.Dispose());
         }
     }
 }

@@ -80,7 +80,7 @@ namespace RavenMQ.Network
             socket.WriteBuffer(buffer, 1)
                 .ContinueWith(_ =>
                 {
-                    socket.ReadBuffer(1024)
+                    socket.ReadBuffer(1024, Encoding.UTF8.GetBytes("\r\n\r\n"))
                         .ContinueWith(task => ParseServerResponse(expectedReply, task));
                 })
                 .ContinueWith(HandleFailure);
