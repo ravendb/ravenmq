@@ -1,0 +1,3 @@
+Raven MQ is making use of the following OSS projects:
+
+* Newtonsoft.Json from James Newton-King (http://james.newtonking.com/pages/json-net.aspx)
