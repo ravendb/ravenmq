@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -27,7 +28,7 @@ namespace RavenMQ.Network
                 }
                 if (read == 0 || 
                     start == bufferSize || 
-                    EndsWithSeparator(buffer, start, separator))
+                    ContainsSeparator(buffer, start, separator))
                 {
                     completionSource.SetResult(Tuple.Create(socket, buffer, start));
                     return;
@@ -39,17 +40,16 @@ namespace RavenMQ.Network
             return completionSource.Task;
         }
 
-        private static bool EndsWithSeparator(byte[] buffer, int start, byte[] separator)
+        private static bool ContainsSeparator(byte[] buffer, int start, byte[] separator)
         {
-            if (separator.Length >= start)
-                return false;
-            var separatorStart = start - separator.Length;
-            for (int i = 0; i < separator.Length; i++)
+            for (int j = start-separator.Length; j >= separator.Length; j--)
             {
-                if (buffer[separatorStart + i] != separator[i])
-                    return false;
+                var separatorStart = j;
+                if (separator.Where((t, i) => buffer[separatorStart + i] != t).Any() == false)
+                    return true;
+
             }
-            return true;
+            return false;
         }
 
         public static Task<T> WriteBuffer<T>(this Socket socket, byte[] buffer, T result)

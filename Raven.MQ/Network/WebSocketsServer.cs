@@ -115,16 +115,16 @@ namespace RavenMQ.Network
 
             var buffer = new byte[16];
 
-            Array.Copy(buffer, 0, BitConverter.GetBytes(result1), 0, 4);
-            Array.Copy(buffer, 4, BitConverter.GetBytes(result2), 0, 4);
-            Array.Copy(buffer, challengeBytes, 8);
+            Array.Copy(BitConverter.GetBytes(result1), 0, buffer, 0, 4);
+            Array.Copy(BitConverter.GetBytes(result2), 0, buffer, 4, 4);
+            Array.Copy(challengeBytes, buffer, 8);
             return buffer;
         }
 
         private static int CalculatePartialResult(IEnumerable<char> secWebSocket)
         {
             var numberAsString = secWebSocket.Where(char.IsDigit).Aggregate(new StringBuilder(), (sb, ch) => sb.Append(ch)).ToString();
-            return int.Parse(numberAsString) / secWebSocket.Count(ch => ch == ' ');
+            return (int) (long.Parse(numberAsString)/secWebSocket.Count(ch => ch == ' '));
         }
 
         private static WebSocketConnection ParseClientRequest(Task<Tuple<Socket, byte[], int>> bufferTask)
