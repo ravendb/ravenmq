@@ -10,12 +10,14 @@ namespace RavenMQ.Storage
     public class MessagesStorageActions
     {
         private readonly Table messages;
+        private readonly Table pendingMessages;
         private readonly QueuesStorageActions queuesStorageActions;
         private readonly IUuidGenerator uuidGenerator;
 
-        public MessagesStorageActions(Table messages, QueuesStorageActions queuesStorageActions, IUuidGenerator uuidGenerator)
+        public MessagesStorageActions(Table messages, Table pendingMessages, QueuesStorageActions queuesStorageActions, IUuidGenerator uuidGenerator)
         {
             this.messages = messages;
+            this.pendingMessages = pendingMessages;
             this.queuesStorageActions = queuesStorageActions;
             this.uuidGenerator = uuidGenerator;
         }
@@ -39,15 +41,7 @@ namespace RavenMQ.Storage
                 { "MsgId", after.ToByteArray() }
             };
             var result = messages["ByMsgId"].SkipAfter(key)
-                .Where(x=>
-                {
-                    if (new PathComaparable(x.Value<string>("Queue")).CompareTo(queue) != 0)
-                        return false;
-                    var dateTime = x.Value<DateTime?>("HideUntil");
-                    if (dateTime == null)
-                        return true;
-                    return DateTime.UtcNow >= dateTime.Value;
-                })
+                .Where(x => new PathComaparable(x.Value<string>("Queue")).CompareTo(queue) == 0)
                 .FirstOrDefault();
             if (result == null)
                 return null;
@@ -68,7 +62,25 @@ namespace RavenMQ.Storage
             var key = new JObject { { "MsgId", msgId.ToByteArray() } };
             var readResult = messages.Read(key);
             if (readResult == null)
+            {
+                var pendingResult = pendingMessages.Read(key);
+                if (pendingResult != null)
+                {
+                    pendingMessages.Remove(key);
+                    var pendingQueue = pendingResult.Key.Value<string>("Queue");
+                    var pendingExpiry = pendingResult.Key.Value<DateTime>("Expiry");
+                    if (shouldConsumeMessage(pendingExpiry, pendingQueue) == false)
+                    {
+                        ((JObject)pendingResult.Key).Remove("Hide");
+                        messages.Put(pendingResult.Key, pendingResult.Position, pendingResult.Size);
+                    }
+                    else
+                    {
+                        queuesStorageActions.DecrementMessageCount(pendingQueue);
+                    }
+                }
                 return;
+            }
 
             var queue = readResult.Key.Value<string>("Queue");
             var epxiry = readResult.Key.Value<DateTime>("Expiry");
@@ -81,12 +93,21 @@ namespace RavenMQ.Storage
         public void ResetMessage(Guid msgId)
         {
             var key = new JObject { { "MsgId", msgId.ToByteArray() } };
-            var readResult = messages.Read(key);
+            ResetMessage(key);
+        }
+
+        private void ResetMessage(JToken key)
+        {
+            var readResult = pendingMessages.Read(key);
             if (readResult == null)
                 return;
 
-            ((JObject)readResult.Key).Remove("HideUntil");
-            messages.UpdateKey(readResult.Key);
+            var jObject = ((JObject)readResult.Key);
+            var jProperty = jObject.Property("Hide");
+            if (jProperty != null)
+                jProperty.Remove();
+
+            messages.Put(jObject, readResult.Position, readResult.Size);
         }
 
         public void HideMessageFor(Guid msgId, TimeSpan hideTimeout)
@@ -96,8 +117,19 @@ namespace RavenMQ.Storage
             if (readResult == null)
                 return;
 
-            readResult.Key["HideUntil"] = DateTime.UtcNow.Add(hideTimeout);
-            messages.UpdateKey(readResult.Key);
+            messages.Remove(key);
+
+            readResult.Key["Hide"] = DateTime.UtcNow.Add(hideTimeout);
+            pendingMessages.Put(readResult.Key, readResult.Position, readResult.Size);
+        }
+
+        public void ResetExpiredMessages()
+        {
+            foreach (var key in pendingMessages["ByHideDesc"]
+                .SkipTo(new JObject{{"Hide", DateTime.UtcNow}}))
+            {
+                ResetMessage(key);
+            }
         }
     }
 }

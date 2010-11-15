@@ -12,12 +12,20 @@ namespace RavenMQ.Storage
                 {"ByMsgId", key => new ComparableByteArray(key.Value<byte[]>("MsgId"))}
             });
 
+            PendingMessages = Add(new Table(key => key["MsgId"], "Messages")
+            {
+                {"ByHideDesc", key=> new ReverseComparable(key.Value<DateTime>("Hide"))}
+            });
+
             Queues = Add(new Table(key => key["Name"], "Queues"));
+
 
             Identity = Add(new Table(x => x.Value<string>("name"), "Identity"));
             
             Details = Add(new Table("Details"));
         }
+
+        public Table PendingMessages { get; set; }
 
         public Table Queues { get; set; }
 

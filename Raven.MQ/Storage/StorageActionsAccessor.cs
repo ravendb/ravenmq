@@ -10,7 +10,7 @@ namespace RavenMQ.Storage
         {
             Items = new Dictionary<object, List<object>>();
             Queues = new QueuesStorageActions(queuesStroage.Queues);
-            Messages = new MessagesStorageActions(queuesStroage.Messages, Queues, uuidGenerator);
+            Messages = new MessagesStorageActions(queuesStroage.Messages, queuesStroage.PendingMessages, Queues, uuidGenerator);
             General = new GeneralStorageActions(queuesStroage.Identity);
         }
 
