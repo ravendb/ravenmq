@@ -65,5 +65,23 @@ namespace Raven.MQ.Tests.Network
                 }
             }
         }
+
+        [Fact]
+        public void Can_handle_client_connecting_and_just_hanging_on()
+        {
+            using (var server = new WebSocketsServer("localhost", 8181))
+            {
+                server.Start().Wait();
+                using (var tcp = new TcpClient())
+                {
+                    tcp.Connect("localhost", 8181);
+
+                    using (var tcp2 = new TcpClient())
+                    {
+                        tcp2.Connect("localhost", 8181);
+                    }
+                }
+            }
+        }
     }
 }
