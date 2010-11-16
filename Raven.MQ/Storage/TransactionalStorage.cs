@@ -12,7 +12,7 @@ namespace RavenMQ.Storage
     public class TransactionalStorage : ITransactionalStorage
     {
         private readonly ThreadLocal<IStorageActionsAccessor> current = new ThreadLocal<IStorageActionsAccessor>();
-        private readonly InMemroyRavenConfiguration configuration;
+        private readonly InMemoryRavenConfiguration configuration;
         private Timer idleTimer;
         private readonly ReaderWriterLockSlim disposerLock = new ReaderWriterLockSlim();
         private long lastUsageTime;
@@ -21,7 +21,7 @@ namespace RavenMQ.Storage
         private IPersistentSource persistenceSource;
         private QueuesStorage queuesStroage;
 
-        public TransactionalStorage(InMemroyRavenConfiguration configuration)
+        public TransactionalStorage(InMemoryRavenConfiguration configuration)
         {
             this.configuration = configuration;
         }

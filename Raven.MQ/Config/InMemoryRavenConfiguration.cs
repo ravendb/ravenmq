@@ -11,7 +11,7 @@ using RavenMQ.Storage;
 
 namespace RavenMQ.Config
 {
-    public class InMemroyRavenConfiguration : IRaveHttpnConfiguration
+    public class InMemoryRavenConfiguration : IRaveHttpnConfiguration
     {
         private CompositionContainer container;
         private bool containerExternallySet;
@@ -19,7 +19,7 @@ namespace RavenMQ.Config
         private string pluginsDirectory;
         private bool runInUnreliableYetFastModeThatIsNotSuitableForProduction;
 
-        public InMemroyRavenConfiguration()
+        public InMemoryRavenConfiguration()
         {
             MaxPageSize = 128;
 

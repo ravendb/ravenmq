@@ -3,7 +3,7 @@ using System.Configuration;
 
 namespace RavenMQ.Config
 {
-    public class RavenConfiguration : InMemroyRavenConfiguration
+    public class RavenConfiguration : InMemoryRavenConfiguration
     {
         public RavenConfiguration()
         {

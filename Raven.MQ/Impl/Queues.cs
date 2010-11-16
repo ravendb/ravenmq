@@ -19,7 +19,7 @@ namespace RavenMQ.Impl
     public class Queues : IQueues, IUuidGenerator
     {
         private static long sequentialUuidCounter;
-        private readonly InMemroyRavenConfiguration configuration;
+        private readonly InMemoryRavenConfiguration configuration;
         private readonly TransactionalStorage transactionalStorage;
         private long currentEtagBase;
 
@@ -28,7 +28,7 @@ namespace RavenMQ.Impl
 
 
 
-        public Queues(InMemroyRavenConfiguration configuration)
+        public Queues(InMemoryRavenConfiguration configuration)
         {
             this.configuration = configuration;
             transactionalStorage = new TransactionalStorage(configuration);

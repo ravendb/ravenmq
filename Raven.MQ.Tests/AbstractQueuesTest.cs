@@ -11,7 +11,7 @@ namespace Raven.MQ.Tests
 
         public AbstractQueuesTest()
         {
-            queues = new Queues(new InMemroyRavenConfiguration
+            queues = new Queues(new InMemoryRavenConfiguration
             {
                 RunInMemory = true
             });

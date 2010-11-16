@@ -21,7 +21,7 @@ namespace Raven.MQ.Server
 			get { return server; }
 		}
 
-		public RavenDbServer(InMemroyRavenConfiguration settings)
+		public RavenDbServer(InMemoryRavenConfiguration settings)
 		{
 			settings.LoadLoggingSettings();
 			queues = new Queues(settings);

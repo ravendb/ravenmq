@@ -11,9 +11,9 @@ namespace RavenMQ.Server.Responders
             get { return (Queues)ResourceStore; }
         }
 
-        public InMemroyRavenConfiguration Configuration
+        public InMemoryRavenConfiguration Configuration
         {
-            get { return (InMemroyRavenConfiguration)ResourceStore.Configuration; }
+            get { return (InMemoryRavenConfiguration)ResourceStore.Configuration; }
         }
     }
 }
