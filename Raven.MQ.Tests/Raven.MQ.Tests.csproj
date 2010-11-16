@@ -46,7 +46,10 @@
   <ItemGroup>
     <Compile Include="AbstractQueuesTest.cs" />
     <Compile Include="BatchOperations.cs" />
-    <Compile Include="Network\WebSocketConnectionTestsForErrors.cs" />
+    <Compile Include="Network\CaptureClientIntegration.cs" />
+    <Compile Include="Network\ConnectionTests.cs" />
+    <Compile Include="Network\ConnectionTestsForErrors.cs" />
+    <Compile Include="Network\PongServerIntegration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueuesTest.cs" />
     <Compile Include="SimpleMessages.cs" />

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using System.Linq;
 
 namespace RavenMQ.Network
 {
@@ -15,11 +15,15 @@ namespace RavenMQ.Network
         private readonly ConcurrentDictionary<Guid, Socket> connections = new ConcurrentDictionary<Guid, Socket>();
         private readonly IPEndPoint endpoint;
         private readonly Socket listener;
+        private readonly IServerIntegration serverIntegration;
 
-        public ServerConnection(IPEndPoint endpoint)
+        public ServerConnection(IPEndPoint endpoint, IServerIntegration serverIntegration)
         {
             this.endpoint = endpoint;
+            this.serverIntegration = serverIntegration;
             listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
+
+            serverIntegration.Init(this);
         }
 
         #region IDisposable Members
@@ -48,18 +52,19 @@ namespace RavenMQ.Network
 
             value.WriteBuffer(msg).ContinueWith(task =>
             {
-                if (task.Exception == null) 
+                if (task.Exception == null)
                     return;
                 RemoveConnection(id);
             });
         }
 
-        private void RemoveConnection(Guid id)
+        private void RemoveConnection(Guid socketId)
         {
             Socket value;
-            if (connections.TryRemove(id, out value) == false)
+            if (connections.TryRemove(socketId, out value) == false)
                 return;
             value.Dispose();
+            serverIntegration.OnConnectionRemoved(socketId);
         }
 
         private void ListenForConnections()
@@ -89,7 +94,7 @@ namespace RavenMQ.Network
                         {
                             {"Type", "Error"},
                             {"Error", "Could not read BSON value"},
-                            {"Details", string.Join(Environment.NewLine, e.InnerExceptions.Select(x=>x.Message))}
+                            {"Details", string.Join(Environment.NewLine, e.InnerExceptions.Select(x => x.Message))}
                         })
                             .ContinueWith(_ => socket.Dispose());
                         return;
@@ -131,16 +136,18 @@ namespace RavenMQ.Network
                             AddConnection(socket);
                         });
                 })
-                    .ContinueWith(overallResponseTask =>
-                    {
-                        if (overallResponseTask.Exception != null)
-                            socket.Dispose();
-                    });
+                .ContinueWith(overallResponseTask =>
+                {
+                    if (overallResponseTask.Exception != null)
+                        socket.Dispose();
+                });
         }
 
         private void AddConnection(Socket socket)
         {
-            connections.TryAdd(Guid.NewGuid(), socket);
+            Guid socketId = Guid.NewGuid();
+            connections.TryAdd(socketId, socket);
+            serverIntegration.OnNewConnection(socketId);
         }
     }
 }

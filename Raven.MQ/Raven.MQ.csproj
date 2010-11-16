@@ -63,6 +63,8 @@
     <Compile Include="Impl\Queues.cs" />
     <Compile Include="IQueues.cs" />
     <Compile Include="Network\ClientConnection.cs" />
+    <Compile Include="Network\IClientIntegration.cs" />
+    <Compile Include="Network\IServerIntegration.cs" />
     <Compile Include="Network\ServerConnection.cs" />
     <Compile Include="Network\SocketExtensions.cs" />
     <Compile Include="Plugins\AbstractMessageEnqueuedTrigger.cs" />

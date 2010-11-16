@@ -10,12 +10,29 @@ using RavenMQ.Extensions;
 
 namespace Raven.MQ.Tests.Network
 {
-    public class WebSocketConnectionTestsForErrors
+    public class ConnectionTestsForErrors
     {
+        public class FakeServerIntegration : IServerIntegration
+        {
+            public void Init(ServerConnection connection)
+            {
+                
+            }
+
+            public void OnNewConnection(Guid connectionId)
+            {
+                
+            }
+
+            public void OnConnectionRemoved(Guid connectionId)
+            {
+            }
+        }
+
         [Fact]
         public void Will_not_crash_if_client_connect_and_immediately_disconnects()
         {
-            using (var server = new ServerConnection(new IPEndPoint(IPAddress.Loopback, 8181)))
+            using (var server = new ServerConnection(new IPEndPoint(IPAddress.Loopback, 8181), new FakeServerIntegration()))
             {
                 server.Start();
                 for (int i = 0; i < 5; i++)
@@ -31,7 +48,7 @@ namespace Raven.MQ.Tests.Network
         [Fact]
         public void Will_not_crash_if_client_connect_and_send_garbage_data()
         {
-            using (var server = new ServerConnection(new IPEndPoint(IPAddress.Loopback, 8181)))
+            using (var server = new ServerConnection(new IPEndPoint(IPAddress.Loopback, 8181), new FakeServerIntegration()))
             {
                 server.Start();
                 for (var i = 0; i < 5; i++)
@@ -56,7 +73,7 @@ namespace Raven.MQ.Tests.Network
         [Fact]
         public void Can_handle_client_connecting_and_just_hanging_on()
         {
-            using (var server = new ServerConnection(new IPEndPoint(IPAddress.Loopback, 8181)))
+            using (var server = new ServerConnection(new IPEndPoint(IPAddress.Loopback, 8181), new FakeServerIntegration()))
             {
                 server.Start();
                 using (var tcp = new TcpClient())
