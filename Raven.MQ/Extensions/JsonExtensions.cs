@@ -51,6 +51,28 @@ namespace RavenMQ.Extensions
         /// <summary>
         /// Convert a JToken to a byte array
         /// </summary>
+        public static byte[] ToBytesWithLengthPrefix(this JToken self)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                for (int i = 0; i < 4; i++)//prefixing with len
+                {
+                    memoryStream.WriteByte(0);
+                }
+                self.WriteTo(new BsonWriter(memoryStream)
+                {
+                    DateTimeKindHandling = DateTimeKind.Unspecified
+                });
+                var bytesWithLengthPrefix = memoryStream.ToArray();
+                var lenAsBytes = BitConverter.GetBytes(bytesWithLengthPrefix.Length - 4);
+                Array.Copy(lenAsBytes, 0, bytesWithLengthPrefix, 0, 4);
+                return bytesWithLengthPrefix;
+            }
+        }
+
+        /// <summary>
+        /// Convert a JToken to a byte array
+        /// </summary>
         public static void WriteTo(this JToken self, Stream stream)
         {
             self.WriteTo(new BsonWriter(stream)

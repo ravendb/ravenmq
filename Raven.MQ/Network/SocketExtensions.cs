@@ -1,15 +1,50 @@
 ﻿using System;
-using System.Linq;
+using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using RavenMQ.Extensions;
 
 namespace RavenMQ.Network
 {
     public static class SocketExtensions
     {
-        public static Task<Tuple<Socket, byte[], int>> ReadBuffer(this Socket socket, int bufferSize, byte[] separator)
+        public static Task<JObject> ReadJObjectFromBuffer(this Socket socket)
         {
-            var completionSource = new TaskCompletionSource<Tuple<Socket, byte[], int>>();
+            var tcs = new TaskCompletionSource<JObject>();
+            socket.ReadBuffer(4)
+                .ContinueWith(task =>
+                {
+                    try
+                    {
+                        var len = BitConverter.ToInt32(task.Result.Array, task.Result.Offset);
+                        socket.ReadBuffer(len)
+                            .ContinueWith(readLenTask =>
+                            {
+                                try
+                                {
+                                    var ms = new MemoryStream(readLenTask.Result.Array, readLenTask.Result.Offset,
+                                                              readLenTask.Result.Count);
+
+                                    tcs.SetResult(ms.ToJObject());
+                                }
+                                catch (Exception e)
+                                {
+                                    tcs.SetException(e);
+                                }
+                            });
+                    }
+                    catch (Exception e)
+                    {
+                        tcs.SetException(e);
+                    }
+                });
+            return tcs.Task;
+        }
+
+        public static Task<ArraySegment<byte>> ReadBuffer(this Socket socket, int bufferSize)
+        {
+            var completionSource = new TaskCompletionSource<ArraySegment<byte>>();
             var buffer = new byte[bufferSize];
             var start = 0;
             AsyncCallback callback = null;
@@ -26,11 +61,9 @@ namespace RavenMQ.Network
                     completionSource.SetException(e);
                     return;
                 }
-                if (read == 0 || 
-                    start == bufferSize || 
-                    ContainsSeparator(buffer, start, separator))
+                if (read == 0 || start == bufferSize)
                 {
-                    completionSource.SetResult(Tuple.Create(socket, buffer, start));
+                    completionSource.SetResult(new ArraySegment<byte>(buffer, 0, start));
                     return;
                 }
                 socket.BeginReceive(buffer, start, bufferSize - start, SocketFlags.None, callback, null);
@@ -40,21 +73,14 @@ namespace RavenMQ.Network
             return completionSource.Task;
         }
 
-        private static bool ContainsSeparator(byte[] buffer, int start, byte[] separator)
+        public static Task WriteBuffer(this Socket socket, JToken value)
         {
-            for (int j = start-separator.Length; j >= separator.Length; j--)
-            {
-                var separatorStart = j;
-                if (separator.Where((t, i) => buffer[separatorStart + i] != t).Any() == false)
-                    return true;
-
-            }
-            return false;
+            return socket.WriteBuffer(value.ToBytesWithLengthPrefix());
         }
 
-        public static Task<T> WriteBuffer<T>(this Socket socket, byte[] buffer, T result)
+        public static Task WriteBuffer(this Socket socket, byte[] buffer)
         {
-            var completionSource = new TaskCompletionSource<T>();
+            var completionSource = new TaskCompletionSource<object>();
             var start = 0;
             AsyncCallback callback = null;
             callback = ar =>
@@ -72,7 +98,7 @@ namespace RavenMQ.Network
                 }
                 if (read == 0)
                 {
-                    completionSource.SetResult(result);
+                    completionSource.SetResult(null);
                 }
                 socket.BeginSend(buffer, start, buffer.Length - start, SocketFlags.None, callback, null);
             };

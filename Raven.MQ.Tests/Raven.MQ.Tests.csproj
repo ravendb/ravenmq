@@ -46,7 +46,6 @@
   <ItemGroup>
     <Compile Include="AbstractQueuesTest.cs" />
     <Compile Include="BatchOperations.cs" />
-    <Compile Include="Network\WebSocketConnectionTests.cs" />
     <Compile Include="Network\WebSocketConnectionTestsForErrors.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueuesTest.cs" />
