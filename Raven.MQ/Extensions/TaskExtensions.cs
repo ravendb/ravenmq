@@ -11,5 +11,13 @@ namespace RavenMQ.Extensions
                 TaskContinuationOptions.ExecuteSynchronously);
             return task;
         }
+
+
+        public static Task<T> IgnoreExceptions<T>(this Task<T> task)
+        {
+            task.ContinueWith(c => GC.KeepAlive(c.Exception),
+                TaskContinuationOptions.ExecuteSynchronously);
+            return task;
+        }
     }
 }

@@ -73,7 +73,7 @@ namespace RavenMQ.Network
             Task.Factory.FromAsync<Socket>(listener.BeginAccept, listener.EndAccept, null)
                 .ContinueWith(task =>
                 {
-                    if (task.Exception == null)
+                    if (task.Exception != null)
                         return;
 
                     ListenForConnections();

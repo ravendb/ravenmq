@@ -23,7 +23,7 @@ namespace Raven.MQ.Tests.Network
             var clientIntegration = new CaptureClientIntegration();
             using(var clientConnection = new ClientConnection(new IPEndPoint(IPAddress.Loopback, 8181), clientIntegration))
             {
-                clientConnection.Connect();
+                clientConnection.Connect().Wait();
 
                 clientIntegration.MessageArrived.WaitOne();
 

@@ -85,20 +85,21 @@ namespace RavenMQ.Network
             AsyncCallback callback = null;
             callback = ar =>
             {
-                int read;
+                int write;
                 try
                 {
-                    read = socket.EndSend(ar);
-                    start += read;
+                    write = socket.EndSend(ar);
+                    start += write;
                 }
                 catch (Exception e)
                 {
                     completionSource.SetException(e);
                     return;
                 }
-                if (read == 0)
+                if (start == buffer.Length)
                 {
                     completionSource.SetResult(null);
+                    return;
                 }
                 socket.BeginSend(buffer, start, buffer.Length - start, SocketFlags.None, callback, null);
             };
