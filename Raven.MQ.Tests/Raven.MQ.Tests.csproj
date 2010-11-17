@@ -66,6 +66,10 @@
       <Project>{508E5F54-A8F3-47F4-9297-CB96F91D4DF8}</Project>
       <Name>Raven.Http</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Raven.MQ.Client\Raven.MQ.Client.csproj">
+      <Project>{A8060EAC-0448-4F52-82AE-6A4D62D5082C}</Project>
+      <Name>Raven.MQ.Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Raven.MQ.Server\Raven.MQ.Server.csproj">
       <Project>{BA7CFEAC-1768-4B29-83D6-11ABD01DE8FB}</Project>
       <Name>Raven.MQ.Server</Name>

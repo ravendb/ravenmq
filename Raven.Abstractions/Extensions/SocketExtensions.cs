@@ -3,9 +3,8 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using RavenMQ.Extensions;
 
-namespace RavenMQ.Network
+namespace Raven.Abstractions.Extensions
 {
     public static class SocketExtensions
     {
@@ -73,12 +72,12 @@ namespace RavenMQ.Network
             return completionSource.Task;
         }
 
-        public static Task WriteBuffer(this Socket socket, JToken value)
+        public static Task Write(this Socket socket, JToken value)
         {
-            return socket.WriteBuffer(value.ToBytesWithLengthPrefix());
+            return socket.Write(value.ToBytesWithLengthPrefix());
         }
 
-        public static Task WriteBuffer(this Socket socket, byte[] buffer)
+        public static Task Write(this Socket socket, byte[] buffer)
         {
             var completionSource = new TaskCompletionSource<object>();
             var start = 0;

@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 using Raven.Abstractions.Data;
+using Raven.MQ.Client.Network;
 using Raven.MQ.Server;
 using RavenMQ.Config;
 using RavenMQ.Impl;

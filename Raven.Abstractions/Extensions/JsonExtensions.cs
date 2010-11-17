@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
 
-namespace RavenMQ.Extensions
+namespace Raven.Abstractions.Extensions
 {
 	/// <summary>
 	/// Json extensions 

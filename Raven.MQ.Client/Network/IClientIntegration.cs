@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 
-namespace RavenMQ.Network
+namespace Raven.MQ.Client.Network
 {
     public interface IClientIntegration
     {

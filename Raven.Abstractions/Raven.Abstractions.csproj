@@ -62,7 +62,10 @@
     <Compile Include="Data\ReadResults.cs" />
     <Compile Include="Data\TransactionInformation.cs" />
     <Compile Include="Exceptions\ConcurrencyException.cs" />
+    <Compile Include="Extensions\JsonExtensions.cs" />
+    <Compile Include="Extensions\SocketExtensions.cs" />
     <Compile Include="Extensions\StreamExtension.cs" />
+    <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Json\JsonEnumConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

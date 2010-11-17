@@ -3,12 +3,15 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using RavenMQ.Extensions;
+using Raven.Abstractions.Extensions;
 
-namespace RavenMQ.Network
+namespace Raven.MQ.Client.Network
 {
     public class ClientConnection : IDisposable
     {
+        public static readonly Guid RequestHandshakeSignature = new Guid("585D6B31-A06A-40DD-99EE-001323DAADB0");
+        public static readonly Guid ResponseHandshakeSignature = new Guid("3397D9BF-2C51-448E-A1B1-3981D42A8609");
+        
         private readonly IClientIntegration clientIntegration;
         private readonly IPEndPoint endpoint;
         private readonly Socket socket;
@@ -37,7 +40,7 @@ namespace RavenMQ.Network
             if (connected == false)
                 throw new InvalidOperationException("You cannot call Send before Connect is completed");
 
-            return socket.WriteBuffer(msg);
+            return socket.Write(msg);
         }
 
         public Task Connect()
@@ -48,9 +51,9 @@ namespace RavenMQ.Network
                     if (task.Exception != null)
                         return task;
 
-                    return socket.WriteBuffer(new JObject
+                    return socket.Write(new JObject
                     {
-                        {"RequestSignature", ServerConnection.RequestHandshakeSignature.ToByteArray()}
+                        {"RequestSignature", RequestHandshakeSignature.ToByteArray()}
                     })
                         .IgnoreExceptions()
                         .ContinueWith(writeResult =>
@@ -71,7 +74,7 @@ namespace RavenMQ.Network
         private static void AssertValidServerResponse(Task<JObject> readTask)
         {
             if (new Guid(readTask.Result.Value<byte[]>("ResponseSignature")) !=
-                ServerConnection.ResponseHandshakeSignature)
+                ResponseHandshakeSignature)
                 throw new InvalidOperationException("Invalid response signature from server");
         }
 

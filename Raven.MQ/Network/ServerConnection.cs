@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Raven.Abstractions.Extensions;
 using RavenMQ.Extensions;
 
 namespace RavenMQ.Network
@@ -51,7 +52,7 @@ namespace RavenMQ.Network
             if (connections.TryGetValue(id, out value) == false)
                 return;
 
-            value.WriteBuffer(msg).ContinueWith(task =>
+            value.Write(msg).ContinueWith(task =>
             {
                 if (task.Exception == null)
                     return;
@@ -94,7 +95,7 @@ namespace RavenMQ.Network
                     }
                     catch (AggregateException e)
                     {
-                        socket.WriteBuffer(new JObject
+                        socket.Write(new JObject
                         {
                             {"Type", "Error"},
                             {"Error", "Could not read BSON value"},
@@ -106,7 +107,7 @@ namespace RavenMQ.Network
                     }
                     catch (Exception e)
                     {
-                        socket.WriteBuffer(new JObject
+                        socket.Write(new JObject
                         {
                             {"Type", "Error"},
                             {"Error", "Could not read BSON value"},
@@ -118,7 +119,7 @@ namespace RavenMQ.Network
                     }
                     if (new Guid(result.Value<byte[]>("RequestSignature")) != RequestHandshakeSignature)
                     {
-                        socket.WriteBuffer(new JObject
+                        socket.Write(new JObject
                         {
                             {"Type", "Error"},
                             {"Error", "Invalid server signature"}
@@ -128,7 +129,7 @@ namespace RavenMQ.Network
                         return;
                     }
 
-                    socket.WriteBuffer(new JObject
+                    socket.Write(new JObject
                     {
                         {"Type", "Confirmation"},
                         {"ResponseSignature", ResponseHandshakeSignature.ToByteArray()}

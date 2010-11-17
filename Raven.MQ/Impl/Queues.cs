@@ -7,6 +7,7 @@ using System.Threading;
 using Newtonsoft.Json.Linq;
 using Raven.Abstractions.Commands;
 using Raven.Abstractions.Data;
+using Raven.Abstractions.Extensions;
 using Raven.Http;
 using RavenMQ.Config;
 using RavenMQ.Extensions;

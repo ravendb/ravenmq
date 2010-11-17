@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using Newtonsoft.Json;
+using Raven.MQ.Client.Network;
 using RavenMQ.Network;
 using Xunit;
 

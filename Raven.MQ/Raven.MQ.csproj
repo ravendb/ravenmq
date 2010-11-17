@@ -57,17 +57,12 @@
     <Compile Include="Config\InMemoryRavenConfiguration.cs" />
     <Compile Include="Config\RavenConfiguration.cs" />
     <Compile Include="Extensions\IOExtensions.cs" />
-    <Compile Include="Extensions\JsonExtensions.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="Extensions\MetadataExtensions.cs" />
-    <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Impl\Queues.cs" />
     <Compile Include="IQueues.cs" />
-    <Compile Include="Network\ClientConnection.cs" />
-    <Compile Include="Network\IClientIntegration.cs" />
     <Compile Include="Network\IServerIntegration.cs" />
     <Compile Include="Network\ServerConnection.cs" />
-    <Compile Include="Network\SocketExtensions.cs" />
     <Compile Include="Plugins\AbstractMessageEnqueuedTrigger.cs" />
     <Compile Include="Plugins\MessageVeto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

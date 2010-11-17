@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace RavenMQ.Extensions
+namespace Raven.Abstractions.Extensions
 {
     public static class TaskExtensions
     {
