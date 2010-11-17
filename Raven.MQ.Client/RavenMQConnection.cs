@@ -10,6 +10,7 @@ using Raven.Abstractions;
 using Raven.Abstractions.Commands;
 using Raven.Abstractions.Data;
 using Raven.Abstractions.Json;
+using Raven.MQ.Client.Impl;
 using Raven.MQ.Client.Network;
 using Raven.Abstractions.Extensions;
 using System.Linq;
@@ -25,8 +26,8 @@ namespace Raven.MQ.Client
         private readonly ConcurrentDictionary<string, Guid> lastEtagPerQeueue =
             new ConcurrentDictionary<string, Guid>(StringComparer.InvariantCultureIgnoreCase);
 
-        private readonly ConcurrentDictionary<string, Action<RavenMQContext, OutgoingMessage>> actionsPerQueue =
-            new ConcurrentDictionary<string, Action<RavenMQContext, OutgoingMessage>>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly ConcurrentDictionary<string, Action<IRavenMQContext, OutgoingMessage>> actionsPerQueue =
+            new ConcurrentDictionary<string, Action<IRavenMQContext, OutgoingMessage>>(StringComparer.InvariantCultureIgnoreCase);
 
         private Task connectToServerTask;
 
@@ -40,7 +41,7 @@ namespace Raven.MQ.Client
             OnConnectionClosed();
         }
 
-        public IDisposable Subscribe(string queue, Action<RavenMQContext, OutgoingMessage> action)
+        public IDisposable Subscribe(string queue, Action<IRavenMQContext, OutgoingMessage> action)
         {
             lastEtagPerQeueue.TryAdd(queue, Guid.Empty);
             actionsPerQueue.AddOrUpdate(queue, action, (s, existing) => existing + action);
@@ -49,7 +50,7 @@ namespace Raven.MQ.Client
             {
                 while (true)
                 {
-                    Action<RavenMQContext, OutgoingMessage> value;
+                    Action<IRavenMQContext, OutgoingMessage> value;
                     if (actionsPerQueue.TryGetValue(queue, out value))
                         break;
 
@@ -155,7 +156,6 @@ namespace Raven.MQ.Client
                     }).Unwrap()
                     .ContinueWith(resultsTask => ProcessResults(resultsTask.Result.Properties().Select(x=>x.Value)))
                     .IgnoreExceptions();
-
         }
 
         private static JsonSerializer CreateJsonSerializer()
@@ -171,6 +171,7 @@ namespace Raven.MQ.Client
 
         private void ProcessResults(IEnumerable<JToken> results)
         {
+            var list = new List<IncomingMessage>();
             var needAnotherUpdate = false;
             foreach (var value in results)
             {
@@ -185,30 +186,64 @@ namespace Raven.MQ.Client
                     lastMsg.Id,
                     (s, guid) => Max(lastMsg.Id, guid));
 
-                Action<RavenMQContext, OutgoingMessage> action;
+                Action<IRavenMQContext, OutgoingMessage> action;
                 if (actionsPerQueue.TryGetValue(readResults.Queue, out action) == false)
                     continue;
                 foreach (var outgoingMessage in readResults.Results)
                 {
                     try
                     {
-                        action(new RavenMQContext(), outgoingMessage);
+                        var ravenMQContext = new RavenMQContext();
+                        action(ravenMQContext, outgoingMessage);
+                        list.AddRange(ravenMQContext.Messages);
                     }
                     catch { }
                 }
             }
+            PublishMessagesAsync(list);
             if (needAnotherUpdate == false)
                 return;
             UpdateAsync();
+        }
+
+        private Task PublishMessagesAsync(IEnumerable<IncomingMessage> msgs)
+        {
+            var webRequest = (HttpWebRequest)WebRequest.Create(queueBulkEndpoint);
+            webRequest.Method = "POST";
+            webRequest.ContentType = "application/bson";
+            webRequest.Accept = "application/bson";
+            return Task.Factory.FromAsync<Stream>(webRequest.BeginGetRequestStream, webRequest.EndGetRequestStream, null)
+                    .ContinueWith(getReqStreamTask =>
+                    {
+                        if (getReqStreamTask.Exception != null)
+                            return getReqStreamTask;
+
+                        var enumerable = msgs.Select(msg => new EnqueueCommand
+                        {
+                            Message = msg
+                        }).Select(msg => JObject.FromObject(msg, CreateJsonSerializer()));
+                        return getReqStreamTask.Result.Write(new JArray(enumerable));
+                    }).Unwrap()
+                    .ContinueWith(writeRequestTask =>
+                    {
+                        if (writeRequestTask.Exception != null)
+                            writeRequestTask.Wait();// will throw again
+
+                        return Task.Factory.FromAsync<WebResponse>(webRequest.BeginGetResponse, webRequest.EndGetResponse, null);
+                    }).Unwrap()
+                    .ContinueWith(responseTask =>
+                    {
+                        if (responseTask.Exception != null)
+                            responseTask.Wait();// throw aagin
+
+                        responseTask.Result.Close();
+                    })
+                    .IgnoreExceptions();
         }
 
         private static Guid Max(Guid x, Guid y)
         {
             return x.CompareTo(y) > 0 ? x : y;
         }
-    }
-
-    public class RavenMQContext
-    {
     }
 }

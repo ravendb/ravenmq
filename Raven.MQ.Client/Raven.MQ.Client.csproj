@@ -44,10 +44,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IRavenMQContext.cs" />
     <Compile Include="Network\ClientConnection.cs" />
     <Compile Include="Network\IClientIntegration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RavenMQConnection.cs" />
+    <Compile Include="Impl\RavenMQContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Raven.Abstractions\Raven.Abstractions.csproj">

@@ -47,6 +47,8 @@ namespace RavenMQ.Storage
                 return null;
 
             var readResult = messages.Read(result);
+            if (readResult == null)
+                return null;
 
             return new OutgoingMessage
             {

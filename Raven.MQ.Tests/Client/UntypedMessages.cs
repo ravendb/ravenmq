@@ -52,7 +52,50 @@ namespace Raven.MQ.Tests.Client
 
                 Assert.Equal(new byte[]{1,2,3}, msg.Data);
             }
+        }
 
+        [Fact]
+        public void Can_send_a_message_from_receiving_msg()
+        {
+            using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8181)))
+            {
+                var manualResetEventSlim = new ManualResetEventSlim(false);
+                OutgoingMessage msg = null;
+                connection.Subscribe("/queues/abc", (context, message) =>
+                {
+                    msg = message;
+                    context.Send(new IncomingMessage
+                    {
+                        Data = new byte[] {4, 5, 6},
+                        Queue = "/queues/def"
+                    });
+                    manualResetEventSlim.Set();
+                });
+
+                WaitForSubscription();
+
+                ravenMqServer.Queues.Enqueue(new IncomingMessage
+                {
+                    Data = new byte[] { 1, 2, 3 },
+                    Queue = "/queues/abc"
+                });
+
+                manualResetEventSlim.Wait();
+
+                Assert.Equal(new byte[] { 1, 2, 3 }, msg.Data);
+
+                ReadResults results;
+                do
+                {
+                    results = ravenMqServer.Queues.Read(new ReadRequest
+                    {
+                        Queue = "/queues/def"
+                    });
+                    Thread.Sleep(1);
+                } while (results.Results.Count() == 0);
+
+                Assert.Equal(new byte[]{4,5,6}, results.Results.First().Data);
+            }
         }
 
         private void WaitForSubscription()
