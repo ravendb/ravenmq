@@ -193,14 +193,15 @@ namespace Raven.MQ.Client
                 {
                     try
                     {
-                        var ravenMQContext = new RavenMQContext();
+                        var ravenMQContext = new RavenMQContext(PublishMessagesAsync);
                         action(ravenMQContext, outgoingMessage);
                         list.AddRange(ravenMQContext.Messages);
                     }
                     catch { }
                 }
             }
-            PublishMessagesAsync(list);
+            if (list.Count > 0)
+                PublishMessagesAsync(list);
             if (needAnotherUpdate == false)
                 return;
             UpdateAsync();

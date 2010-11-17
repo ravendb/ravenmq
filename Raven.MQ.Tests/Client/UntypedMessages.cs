@@ -98,6 +98,46 @@ namespace Raven.MQ.Tests.Client
             }
         }
 
+        [Fact]
+        public void Can_flush_messages_manually()
+        {
+            using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8181)))
+            {
+                var manualResetEventSlim = new ManualResetEventSlim(false);
+                OutgoingMessage msg = null;
+                connection.Subscribe("/queues/abc", (context, message) =>
+                {
+                    msg = message;
+                    context.Send(new IncomingMessage
+                    {
+                        Data = new byte[] { 4, 5, 6 },
+                        Queue = "/queues/def"
+                    });
+                    context.FlushAsync().Wait();
+                    manualResetEventSlim.Set();
+                });
+
+                WaitForSubscription();
+
+                ravenMqServer.Queues.Enqueue(new IncomingMessage
+                {
+                    Data = new byte[] { 1, 2, 3 },
+                    Queue = "/queues/abc"
+                });
+
+                manualResetEventSlim.Wait();
+
+                Assert.Equal(new byte[] { 1, 2, 3 }, msg.Data);
+
+                var results = ravenMqServer.Queues.Read(new ReadRequest
+                {
+                    Queue = "/queues/def"
+                });
+
+                Assert.Equal(new byte[] { 4, 5, 6 }, results.Results.First().Data);
+            }
+        }
+
         private void WaitForSubscription()
         {
             var subscriptionsSource = ((SubscriptionsSource)ravenMqServer.Queues.Subscriptions);
