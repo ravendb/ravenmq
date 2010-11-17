@@ -71,8 +71,7 @@ namespace Raven.Http.Extensions
             var contentType = context.Request.Headers["Content-Type"];
 		    if(contentType != null && contentType.Contains("application/bson"))
 		    {
-                using (var jsonReader = new BsonReader(context.Request.InputStream))
-                    return JArray.Load(jsonReader);
+                return context.ReadBsonArray();
 		    }
 
 			using (var streamReader = new StreamReader(context.Request.InputStream, GetRequestEncoding(context)))
@@ -99,15 +98,16 @@ namespace Raven.Http.Extensions
 		{
             JsonWriter writer;
             var acceptHeader = context.Request.Headers["Accept"];
-            if (acceptHeader != null && acceptHeader.Contains("application/bson"))
+		    var outputStream = context.Response.OutputStream;
+		    if (acceptHeader != null && acceptHeader.Contains("application/bson"))
             {
                 context.Response.Headers["Content-Type"] = "application/bson";
-                writer = new BsonWriter(context.Response.OutputStream);
+                writer = new BsonWriter(outputStream);
             }
             else
             {
                 context.Response.Headers["Content-Type"] = "application/json; charset=utf-8";
-                var streamWriter = new StreamWriter(context.Response.OutputStream, Encoding.UTF8);
+                var streamWriter = new StreamWriter(outputStream, Encoding.UTF8);
                 writer = new JsonTextWriter(streamWriter)
                 {
                     Formatting = Formatting.None
@@ -117,6 +117,8 @@ namespace Raven.Http.Extensions
 			{
 				Converters = {new JsonToJsonConverter(), new JsonEnumConverter()},
 			}.Serialize(writer, obj);
+            writer.Flush();
+            outputStream.Flush();
 		}
 
 		public static void WriteJson(this IHttpContext context, JToken obj)

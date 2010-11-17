@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="AbstractQueuesTest.cs" />
     <Compile Include="BatchOperations.cs" />
+    <Compile Include="Client\UntypedMessages.cs" />
     <Compile Include="Network\CaptureClientIntegration.cs" />
     <Compile Include="Network\ConnectionTests.cs" />
     <Compile Include="Network\ConnectionTestsForErrors.cs" />

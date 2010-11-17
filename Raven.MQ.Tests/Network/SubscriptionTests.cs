@@ -43,12 +43,7 @@ namespace Raven.MQ.Tests.Network
                     Type = ChangeSubscriptionType.Add
                 })).Wait();
 
-                var subscriptionsSource = ((SubscriptionsSource)ravenMqServer.Queues.Subscriptions);
-                var subscription = (ClientSubscription)subscriptionsSource.Subscriptions.First();
-                while (subscription.Subscriptions.Count() == 0)
-                {
-                    Thread.Sleep(1);
-                }
+                WaitForSubscription();
 
                 ravenMqServer.Queues.Enqueue(new IncomingMessage
                 {
@@ -58,6 +53,16 @@ namespace Raven.MQ.Tests.Network
                 captureClientIntegration.MessageArrived.WaitOne();
 
                 Assert.True(captureClientIntegration.Msgs[0].Value<bool>("Changed"));
+            }
+        }
+
+        private void WaitForSubscription()
+        {
+            var subscriptionsSource = ((SubscriptionsSource)ravenMqServer.Queues.Subscriptions);
+            var subscription = (ClientSubscription)subscriptionsSource.Subscriptions.First();
+            while (subscription.Subscriptions.Count() == 0)
+            {
+                Thread.Sleep(1);
             }
         }
 

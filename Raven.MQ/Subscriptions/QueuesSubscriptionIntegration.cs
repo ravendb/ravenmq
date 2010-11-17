@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Raven.Abstractions.Data;
 using RavenMQ.Impl;
 using RavenMQ.Network;
 

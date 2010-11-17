@@ -28,28 +28,30 @@ namespace RavenMQ.Server.Responders
             for (int index = 0; index < cmds.Count; index++)
             {
                 var cmd = cmds[index];
-                switch (cmd.Value<string>("Type"))
+                var value = cmd.Value<string>("Type").ToUpperInvariant();
+                switch (value)
                 {
-                    case "Consume":
+                    case "CONSUME":
                         typedCmds[index] = (JsonDeserialization<ConsumeCommand>(cmd));
                         break;
-                    case "Enqueue":
+                    case "ENQUEUE":
                         typedCmds[index] = (JsonDeserialization<EnqueueCommand>(cmd));
                         break;
-                    case "Read":
+                    case "READ":
                         typedCmds[index] = (JsonDeserialization<ReadCommand>(cmd));
                         break;
-                    case "Reset":
+                    case "RESET":
                         typedCmds[index] = (JsonDeserialization<ResetCommand>(cmd));
                         break;
+                    default:
+                        throw new ArgumentException("Invalid cmd type: " + cmd.Value<string>("Type"));
                 }
             }
 
             Queues.Batch(typedCmds);
 
-            context.WriteJson(
-                typedCmds.OfType<ReadCommand>().Select(x=>x.Result)
-                );
+            var readResultses = typedCmds.OfType<ReadCommand>().Select(x=>x.Result);
+            context.WriteJson(readResultses);
 
         }
 

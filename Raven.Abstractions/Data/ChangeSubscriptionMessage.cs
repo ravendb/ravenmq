@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RavenMQ.Subscriptions
+namespace Raven.Abstractions.Data
 {
     public class ChangeSubscriptionMessage
     {

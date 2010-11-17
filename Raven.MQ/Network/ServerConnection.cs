@@ -85,7 +85,7 @@ namespace RavenMQ.Network
 
         private void Handshake(Socket socket)
         {
-            socket.ReadJObjectFromBuffer()
+            socket.ReadJObject()
                 .ContinueWith(initMsgTask =>
                 {
                     JObject result;
@@ -161,7 +161,7 @@ namespace RavenMQ.Network
 
         private void ReadMessageFrom(Guid socketId, Socket socket)
         {
-            socket.ReadJObjectFromBuffer()
+            socket.ReadJObject()
                 .ContinueWith(task =>
                 {
                     if (task.Exception != null)

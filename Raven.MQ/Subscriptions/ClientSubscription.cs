@@ -2,13 +2,14 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using Raven.Abstractions.Data;
 using RavenMQ.Network;
 
 namespace RavenMQ.Subscriptions
 {
     public class ClientSubscription : ISubscription
     {
-        private readonly ConcurrentDictionary<string, string> subscriptions = new ConcurrentDictionary<string, string>();
+        private readonly ConcurrentDictionary<string, string> subscriptions = new ConcurrentDictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
         private readonly Guid clientId;
         private readonly ServerConnection connection;
 
@@ -27,6 +28,13 @@ namespace RavenMQ.Subscriptions
         {
             switch (msg.Type)
             {
+                case ChangeSubscriptionType.Set:
+                    subscriptions.Clear();
+                    foreach (var queue in msg.Queues)
+                    {
+                        subscriptions.TryAdd(queue, queue);
+                    }
+                    break;
                 case ChangeSubscriptionType.Add:
                     foreach (var queue in msg.Queues)
                     {

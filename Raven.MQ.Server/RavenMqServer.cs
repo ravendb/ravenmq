@@ -50,6 +50,7 @@ namespace Raven.MQ.Server
 
 		public void Dispose()
 		{
+            serverConnection.Dispose();
 			server.Dispose();
 			queues.Dispose();
 		}

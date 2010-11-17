@@ -55,12 +55,15 @@
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\ReadCommand.cs" />
     <Compile Include="Commands\ResetCommand.cs" />
+    <Compile Include="Data\ChangeSubscriptionMessage.cs" />
+    <Compile Include="Data\ChangeSubscriptionType.cs" />
     <Compile Include="Data\IncomingMessage.cs" />
     <Compile Include="Data\OutgoingMessage.cs" />
     <Compile Include="Data\QueueStatistics.cs" />
     <Compile Include="Data\ReadRequest.cs" />
     <Compile Include="Data\ReadResults.cs" />
     <Compile Include="Data\TransactionInformation.cs" />
+    <Compile Include="DisposableAction.cs" />
     <Compile Include="Exceptions\ConcurrencyException.cs" />
     <Compile Include="Extensions\JsonExtensions.cs" />
     <Compile Include="Extensions\SocketExtensions.cs" />

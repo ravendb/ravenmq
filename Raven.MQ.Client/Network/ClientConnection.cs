@@ -57,7 +57,7 @@ namespace Raven.MQ.Client.Network
                     })
                         .IgnoreExceptions()
                         .ContinueWith(writeResult =>
-                                      socket.ReadJObjectFromBuffer()
+                                      socket.ReadJObject()
                                           .ContinueWith(AssertValidServerResponse)
                                           .ContinueWith(connectionTask =>
                                           {
@@ -80,7 +80,7 @@ namespace Raven.MQ.Client.Network
 
         private void StartReceiving()
         {
-            socket.ReadJObjectFromBuffer()
+            socket.ReadJObject()
                 .ContinueWith(task =>
                 {
                     if (task.Exception != null)
@@ -91,7 +91,13 @@ namespace Raven.MQ.Client.Network
 
                     StartReceiving();
 
-                    clientIntegration.OnMessageArrived(task.Result);
+                    try
+                    {
+                        clientIntegration.OnMessageArrived(task.Result);
+                    }
+                    catch 
+                    {
+                    }
                 });
         }
 

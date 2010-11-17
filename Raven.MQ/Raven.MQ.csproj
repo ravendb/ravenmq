@@ -83,8 +83,6 @@
     <Compile Include="Storage\StorageActionsAccessor.cs" />
     <Compile Include="Storage\TransactionalStorage.cs" />
     <Compile Include="Storage\TransactionMode.cs" />
-    <Compile Include="Subscriptions\ChangeSubscriptionMessage.cs" />
-    <Compile Include="Subscriptions\ChangeSubscriptionType.cs" />
     <Compile Include="Subscriptions\ClientSubscription.cs" />
     <Compile Include="Subscriptions\ISubscription.cs" />
     <Compile Include="Subscriptions\ISubscriptionsSource.cs" />

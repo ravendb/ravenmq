@@ -8,7 +8,7 @@ namespace Raven.Abstractions.Extensions
 {
     public static class SocketExtensions
     {
-        public static Task<JObject> ReadJObjectFromBuffer(this Socket socket)
+        public static Task<JObject> ReadJObject(this Socket socket)
         {
             var tcs = new TaskCompletionSource<JObject>();
             socket.ReadBuffer(4)
