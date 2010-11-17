@@ -146,7 +146,7 @@ namespace Raven.MQ.Server
             NonAdminHttp.EnsureCanListenToWhenInNonAdminContext(ravenConfiguration.Port);
             if (anonymousUserAccessMode.HasValue)
                 ravenConfiguration.AnonymousUserAccessMode = anonymousUserAccessMode.Value;
-            using (new RavenDbServer(ravenConfiguration))
+            using (new RavenMqServer(ravenConfiguration))
             {
                 Console.WriteLine("Raven MQ is ready to process requests.");
                 Console.WriteLine("Data directory: {0}, HostName: {1} Port: {2}", ravenConfiguration.DataDirectory, ravenConfiguration.HostName ?? "<any>", ravenConfiguration.Port);

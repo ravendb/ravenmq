@@ -57,7 +57,7 @@
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RavenDbServer.cs" />
+    <Compile Include="RavenMqServer.cs" />
     <Compile Include="RavenService.cs">
       <SubType>Component</SubType>
     </Compile>

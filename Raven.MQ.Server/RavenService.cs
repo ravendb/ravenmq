@@ -5,7 +5,7 @@ namespace Raven.MQ.Server
 {
 	internal partial class RavenService : ServiceBase
 	{
-		private RavenDbServer server;
+		private RavenMqServer server;
 
 		public RavenService()
 		{
@@ -14,7 +14,7 @@ namespace Raven.MQ.Server
 
 		protected override void OnStart(string[] args)
 		{
-			server = new RavenDbServer(new RavenConfiguration());
+			server = new RavenMqServer(new RavenConfiguration());
 		}
 
 		protected override void OnStop()

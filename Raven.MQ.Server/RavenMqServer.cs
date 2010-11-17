@@ -8,7 +8,7 @@ using RavenMQ.Subscriptions;
 
 namespace Raven.MQ.Server
 {
-	public class RavenDbServer : IDisposable
+	public class RavenMqServer : IDisposable
 	{
 		private readonly Queues queues;
 		private readonly HttpServer server;
@@ -24,7 +24,7 @@ namespace Raven.MQ.Server
 			get { return server; }
 		}
 
-		public RavenDbServer(InMemoryRavenConfiguration settings)
+		public RavenMqServer(InMemoryRavenConfiguration settings)
 		{
 			settings.LoadLoggingSettings();
 			queues = new Queues(settings);
@@ -35,6 +35,7 @@ namespace Raven.MQ.Server
 				server.Start();
 
                 serverConnection = new ServerConnection(settings.SubscriptionEndpoint, new QueuesSubscriptionIntegration(queues));
+                serverConnection.Start();
 			}
 			catch (Exception)
 			{

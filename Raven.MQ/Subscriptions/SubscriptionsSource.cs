@@ -10,6 +10,11 @@ namespace RavenMQ.Subscriptions
     {
         private readonly ConcurrentDictionary<Guid, ISubscription> subscriptions = new ConcurrentDictionary<Guid, ISubscription>();
 
+        public IEnumerable<ISubscription> Subscriptions
+        {
+            get { return subscriptions.Values; }
+        }
+
         public Guid AddSubscription(ISubscription subscription)
         {
             Guid key = Guid.NewGuid();

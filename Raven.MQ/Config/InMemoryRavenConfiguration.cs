@@ -39,13 +39,19 @@ namespace RavenMQ.Config
         {
             HostName = Settings["Raven/HostName"];
             var endpoint = Settings["Raven/SubscriptionEndpoint"];
-            var endpointParts = endpoint.Split(':');
-            if(endpointParts.Length != 2)
+            if (endpoint != null)
             {
-                throw new InvalidOperationException("Cannot parse 'Raven/SubscriptionEndpoint'");
+                var endpointParts = endpoint.Split(':');
+                if (endpointParts.Length != 2)
+                {
+                    throw new InvalidOperationException("Cannot parse 'Raven/SubscriptionEndpoint'");
+                }
+                SubscriptionEndpoint = new IPEndPoint(IPAddress.Parse(endpointParts[0]), int.Parse(endpointParts[1]));
             }
-            SubscriptionEndpoint = new IPEndPoint(IPAddress.Parse(endpointParts[0]), int.Parse(endpointParts[1]));
-
+            else
+            {
+                SubscriptionEndpoint = new IPEndPoint(IPAddress.Any, 8181);
+            }
             var portStr = Settings["Raven/Port"];
 
             Port = portStr != null ? int.Parse(portStr) : 8080;

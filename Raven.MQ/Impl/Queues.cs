@@ -18,7 +18,7 @@ namespace RavenMQ.Impl
 {
     public class Queues : IQueues, IUuidGenerator
     {
-        private static long sequentialUuidCounter;
+        private static long _sequentialUuidCounter;
         private readonly InMemoryRavenConfiguration configuration;
         private readonly TransactionalStorage transactionalStorage;
         private long currentEtagBase;
@@ -206,7 +206,7 @@ namespace RavenMQ.Impl
         {
             var ticksAsBytes = BitConverter.GetBytes(currentEtagBase);
             Array.Reverse(ticksAsBytes);
-            var increment = Interlocked.Increment(ref sequentialUuidCounter);
+            var increment = Interlocked.Increment(ref _sequentialUuidCounter);
             var currentAsBytes = BitConverter.GetBytes(increment);
             Array.Reverse(currentAsBytes);
             var bytes = new byte[16];

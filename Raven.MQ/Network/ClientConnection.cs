@@ -43,23 +43,29 @@ namespace RavenMQ.Network
         public Task Connect()
         {
             return Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, endpoint, null)
-                .ContinueWith(task => socket.WriteBuffer(new JObject
+                .ContinueWith(task =>
                 {
-                    {"RequestSignature", ServerConnection.RequestHandshakeSignature.ToByteArray()}
-                })
-                                          .IgnoreExceptions()
-                                          .ContinueWith(writeResult =>
-                                                        socket.ReadJObjectFromBuffer()
-                                                            .IgnoreExceptions()
-                                                            .ContinueWith(AssertValidServerResponse)
-                                                            .IgnoreExceptions()
-                                                            .ContinueWith(connectionTask =>
-                                                            {
-                                                                if (connectionTask.Exception == null)
-                                                                    StartReceiving();
-                                                            }))
-                                           .Unwrap()
-                ).Unwrap();
+                    if (task.Exception != null)
+                        return task;
+
+                    return socket.WriteBuffer(new JObject
+                    {
+                        {"RequestSignature", ServerConnection.RequestHandshakeSignature.ToByteArray()}
+                    })
+                        .IgnoreExceptions()
+                        .ContinueWith(writeResult =>
+                                      socket.ReadJObjectFromBuffer()
+                                          .ContinueWith(AssertValidServerResponse)
+                                          .ContinueWith(connectionTask =>
+                                          {
+                                              if (connectionTask.Exception != null)
+                                                  return;
+                                              StartReceiving();
+                                              connected = true;
+                                          }))
+                        .Unwrap();
+
+                }).Unwrap();
         }
 
         private static void AssertValidServerResponse(Task<JObject> readTask)

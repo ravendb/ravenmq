@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using RavenMQ.Network;
 
@@ -15,6 +16,11 @@ namespace RavenMQ.Subscriptions
         {
             this.clientId = clientId;
             this.connection = connection;
+        }
+
+        public IEnumerable<string> Subscriptions
+        {
+            get { return subscriptions.Keys; }
         }
 
         public void HandleSubscriptionMesage(ChangeSubscriptionMessage msg)
