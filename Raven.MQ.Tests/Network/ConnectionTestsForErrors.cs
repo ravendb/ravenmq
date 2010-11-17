@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RavenMQ.Network;
 using Xunit;
 using Raven.Abstractions.Extensions;
@@ -14,7 +15,7 @@ namespace Raven.MQ.Tests.Network
     {
         public class FakeServerIntegration : IServerIntegration
         {
-            public void Init(ServerConnection connection)
+            public void Init(ServerConnection serverConnection)
             {
                 
             }
@@ -26,6 +27,11 @@ namespace Raven.MQ.Tests.Network
 
             public void OnConnectionRemoved(Guid connectionId)
             {
+            }
+
+            public void OnClientMessage(Guid connectionId, JObject msg)
+            {
+                
             }
         }
 

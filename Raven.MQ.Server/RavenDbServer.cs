@@ -2,7 +2,9 @@ using System;
 using Raven.Http;
 using RavenMQ.Config;
 using RavenMQ.Impl;
+using RavenMQ.Network;
 using RavenMQ.Server;
+using RavenMQ.Subscriptions;
 
 namespace Raven.MQ.Server
 {
@@ -10,6 +12,7 @@ namespace Raven.MQ.Server
 	{
 		private readonly Queues queues;
 		private readonly HttpServer server;
+	    private readonly ServerConnection serverConnection;
 
         public Queues Queues
 		{
@@ -30,6 +33,8 @@ namespace Raven.MQ.Server
 			{
 				server = new QueuesHttpServer(settings, queues);
 				server.Start();
+
+                serverConnection = new ServerConnection(settings.SubscriptionEndpoint, new QueuesSubscriptionIntegration(queues));
 			}
 			catch (Exception)
 			{

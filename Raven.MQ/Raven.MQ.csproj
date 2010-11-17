@@ -60,6 +60,7 @@
     <Compile Include="Extensions\JsonExtensions.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="Extensions\MetadataExtensions.cs" />
+    <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Impl\Queues.cs" />
     <Compile Include="IQueues.cs" />
     <Compile Include="Network\ClientConnection.cs" />
@@ -87,8 +88,12 @@
     <Compile Include="Storage\StorageActionsAccessor.cs" />
     <Compile Include="Storage\TransactionalStorage.cs" />
     <Compile Include="Storage\TransactionMode.cs" />
+    <Compile Include="Subscriptions\ChangeSubscriptionMessage.cs" />
+    <Compile Include="Subscriptions\ChangeSubscriptionType.cs" />
+    <Compile Include="Subscriptions\ClientSubscription.cs" />
     <Compile Include="Subscriptions\ISubscription.cs" />
     <Compile Include="Subscriptions\ISubscriptionsSource.cs" />
+    <Compile Include="Subscriptions\QueuesSubscriptionIntegration.cs" />
     <Compile Include="Subscriptions\SubscriptionFilterInfo.cs" />
     <Compile Include="Subscriptions\SubscriptionNotifierMessageEnqueueTrigger.cs" />
     <Compile Include="Subscriptions\SubscriptionsSource.cs" />

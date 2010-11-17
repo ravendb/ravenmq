@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.Linq;
+using System.Net;
 using log4net.Config;
 using Raven.Http;
 using RavenMQ.Extensions;
@@ -37,6 +38,13 @@ namespace RavenMQ.Config
         public void Initialize()
         {
             HostName = Settings["Raven/HostName"];
+            var endpoint = Settings["Raven/SubscriptionEndpoint"];
+            var endpointParts = endpoint.Split(':');
+            if(endpointParts.Length != 2)
+            {
+                throw new InvalidOperationException("Cannot parse 'Raven/SubscriptionEndpoint'");
+            }
+            SubscriptionEndpoint = new IPEndPoint(IPAddress.Parse(endpointParts[0]), int.Parse(endpointParts[1]));
 
             var portStr = Settings["Raven/Port"];
 
@@ -122,6 +130,7 @@ namespace RavenMQ.Config
         /// </summary>
         public string HostName { get; set; }
 
+        public IPEndPoint SubscriptionEndpoint { get; set; }
         public int Port { get; set; }
         public string WebDir { get; set; }
         public string AccessControlAllowOrigin { get; set; }

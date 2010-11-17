@@ -8,9 +8,9 @@ namespace Raven.MQ.Tests.Network
     {
         private ServerConnection con;
 
-        public void Init(ServerConnection connection)
+        public void Init(ServerConnection serverConnection)
         {
-            con = connection;
+            con = serverConnection;
         }
 
         public void OnNewConnection(Guid connectionId)
@@ -23,6 +23,11 @@ namespace Raven.MQ.Tests.Network
 
         public void OnConnectionRemoved(Guid connectionId)
         {
+        }
+
+        public void OnClientMessage(Guid connectionId, JObject msg)
+        {
+            
         }
     }
 }

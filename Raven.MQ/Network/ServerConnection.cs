@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using RavenMQ.Extensions;
 
 namespace RavenMQ.Network
 {
@@ -72,6 +73,9 @@ namespace RavenMQ.Network
             Task.Factory.FromAsync<Socket>(listener.BeginAccept, listener.EndAccept, null)
                 .ContinueWith(task =>
                 {
+                    if (task.Exception == null)
+                        return;
+
                     ListenForConnections();
 
                     Handshake(task.Result);
@@ -96,7 +100,8 @@ namespace RavenMQ.Network
                             {"Error", "Could not read BSON value"},
                             {"Details", string.Join(Environment.NewLine, e.InnerExceptions.Select(x => x.Message))}
                         })
-                            .ContinueWith(_ => socket.Dispose());
+                             .IgnoreExceptions()
+                             .ContinueWith(_ => socket.Dispose());
                         return;
                     }
                     catch (Exception e)
@@ -107,7 +112,8 @@ namespace RavenMQ.Network
                             {"Error", "Could not read BSON value"},
                             {"Details", e.Message}
                         })
-                            .ContinueWith(_ => socket.Dispose());
+                            .IgnoreExceptions()
+                            .ContinueWith(writeErrorTask => socket.Dispose());
                         return;
                     }
                     if (new Guid(result.Value<byte[]>("RequestSignature")) != RequestHandshakeSignature)
@@ -117,6 +123,7 @@ namespace RavenMQ.Network
                             {"Type", "Error"},
                             {"Error", "Invalid server signature"}
                         })
+                            .IgnoreExceptions()
                             .ContinueWith(_ => socket.Dispose());
                         return;
                     }
@@ -148,6 +155,33 @@ namespace RavenMQ.Network
             Guid socketId = Guid.NewGuid();
             connections.TryAdd(socketId, socket);
             serverIntegration.OnNewConnection(socketId);
+            ReadMessageFrom(socketId, socket);
+        }
+
+        private void ReadMessageFrom(Guid socketId, Socket socket)
+        {
+            socket.ReadJObjectFromBuffer()
+                .ContinueWith(task =>
+                {
+                    if (task.Exception != null)
+                    {
+                        RemoveConnection(socketId);
+                        return;
+                    }
+                    ReadMessageFrom(socketId, socket);
+                    IgnoreException(() => serverIntegration.OnClientMessage(socketId, task.Result));
+                });
+        }
+
+        private static void IgnoreException(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch
+            {
+            }
         }
     }
 }
