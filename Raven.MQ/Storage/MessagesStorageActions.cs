@@ -119,8 +119,6 @@ namespace RavenMQ.Storage
             if (readResult == null)
                 return;
 
-            messages.Remove(key);
-
             readResult.Key["Hide"] = DateTime.UtcNow.Add(hideTimeout);
             pendingMessages.UpdateKey(readResult.Key);
         }
