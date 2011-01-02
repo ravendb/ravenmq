@@ -74,7 +74,7 @@ namespace RavenMQ.Storage
                     if (shouldConsumeMessage(pendingExpiry, pendingQueue) == false)
                     {
                         ((JObject)pendingResult.Key).Remove("Hide");
-                        messages.Put(pendingResult.Key, pendingResult.Position, pendingResult.Size);
+                        messages.UpdateKey(pendingResult.Key);
                     }
                     else
                     {
@@ -109,7 +109,7 @@ namespace RavenMQ.Storage
             if (jProperty != null)
                 jProperty.Remove();
 
-            messages.Put(jObject, readResult.Position, readResult.Size);
+        	messages.UpdateKey(jObject);
         }
 
         public void HideMessageFor(Guid msgId, TimeSpan hideTimeout)
@@ -122,7 +122,7 @@ namespace RavenMQ.Storage
             messages.Remove(key);
 
             readResult.Key["Hide"] = DateTime.UtcNow.Add(hideTimeout);
-            pendingMessages.Put(readResult.Key, readResult.Position, readResult.Size);
+            pendingMessages.UpdateKey(readResult.Key);
         }
 
         public void ResetExpiredMessages()

@@ -25,7 +25,25 @@ namespace RavenMQ.Storage
             Details = Add(new Table("Details"));
         }
 
-        public Table PendingMessages { get; set; }
+    	public class ReverseComparable : IComparable
+    	{
+    		private readonly DateTime _inner;
+
+    		public ReverseComparable(DateTime inner)
+    		{
+    			_inner = inner;
+    		}
+
+    		public int CompareTo(object obj)
+    		{
+    			var reverseComparable = obj as ReverseComparable;
+				if (reverseComparable != null)
+					return -1*_inner.CompareTo(reverseComparable._inner);
+    			return -1*_inner.CompareTo(obj);
+    		}
+    	}
+
+    	public Table PendingMessages { get; set; }
 
         public Table Queues { get; set; }
 
