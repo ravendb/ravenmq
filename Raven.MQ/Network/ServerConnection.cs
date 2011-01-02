@@ -71,16 +71,22 @@ namespace RavenMQ.Network
 
         private void ListenForConnections()
         {
-            Task.Factory.FromAsync<Socket>(listener.BeginAccept, listener.EndAccept, null)
-                .ContinueWith(task =>
-                {
-                    if (task.Exception != null)
-                        return;
+        	try
+        	{
+        		Task.Factory.FromAsync<Socket>(listener.BeginAccept, listener.EndAccept, null)
+        			.ContinueWith(task =>
+        			              	{
+        			              		if (task.Exception != null)
+        			              			return;
 
-                    ListenForConnections();
+        			              		ListenForConnections();
 
-                    Handshake(task.Result);
-                });
+        			              		Handshake(task.Result);
+        			              	});
+        	}
+        	catch (ObjectDisposedException)
+        	{
+        	}
         }
 
         private void Handshake(Socket socket)
