@@ -137,7 +137,7 @@ namespace RavenMQ.Impl
         {
             bool hasMoreItems = false;
             var msgs = new List<OutgoingMessage>();
-            var maxPageSize = Math.Max(configuration.MaxPageSize, readRequest.PageSize);
+            var realPageSize = Math.Min(configuration.MaxPageSize, readRequest.PageSize);
 
             // have to be a separate tranasction, so the next read will get it
             // we expect that most of the time this is a no op, because there won't be any expired messages
@@ -148,7 +148,7 @@ namespace RavenMQ.Impl
             transactionalStorage.Batch(actions =>
             {
                 var outgoingMessage = actions.Messages.Dequeue(readRequest.Queue, readRequest.LastMessageId);
-                while (outgoingMessage != null && msgs.Count < maxPageSize)
+                while (outgoingMessage != null && msgs.Count < realPageSize)
                 {
                     if(ShouldConsumeMessage(outgoingMessage.Expiry,outgoingMessage.Queue))
                     {
