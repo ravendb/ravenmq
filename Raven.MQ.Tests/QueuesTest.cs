@@ -57,10 +57,11 @@ namespace Raven.MQ.Tests
                 Data = new byte[] { 1, 2, 3, 4 }
             });
 
-            queues.Read(new ReadRequest
-            {
-                Queue = "/queues/mailboxes/1234",
-            });
+
+			Assert.NotNull(queues.Read(new ReadRequest
+			{
+				Queue = "/queues/mailboxes/1234",
+			}));
             Assert.Null(queues.Read(new ReadRequest
             {
                 Queue = "/queues/mailboxes/1234",
