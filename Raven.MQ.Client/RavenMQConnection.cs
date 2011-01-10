@@ -30,15 +30,16 @@ namespace Raven.MQ.Client
             new ConcurrentDictionary<string, Action<IRavenMQContext, OutgoingMessage>>(StringComparer.InvariantCultureIgnoreCase);
 
         private Task connectToServerTask;
+    	private bool disposed;
 
-        public RavenMQConnection(Uri queueEndpoint, IPEndPoint subscriptionEndpoint)
+    	public RavenMQConnection(Uri queueEndpoint, IPEndPoint subscriptionEndpoint)
         {
-            this.queueBulkEndpoint = new UriBuilder(queueEndpoint)
+            queueBulkEndpoint = new UriBuilder(queueEndpoint)
             {
                 Path = queueEndpoint.AbsolutePath + "/bulk"
             }.Uri;
             this.subscriptionEndpoint = subscriptionEndpoint;
-            OnConnectionClosed();
+            TryReconnecting();
         }
 
         public IDisposable Subscribe(string queue, Action<IRavenMQContext, OutgoingMessage> action)
@@ -84,11 +85,14 @@ namespace Raven.MQ.Client
                     Type = type,
                     Queues = { queue }
                 }));
-            }).IgnoreExceptions();
+            })
+			.Unwrap()
+			.IgnoreExceptions();
         }
 
         public void Dispose()
         {
+        	disposed = true;
             if (clientConnection != null)
                 clientConnection.Dispose();
         }
@@ -97,21 +101,30 @@ namespace Raven.MQ.Client
         {
         }
 
-        public void OnConnectionClosed()
+        public void TryReconnecting()
         {
+			if (disposed)
+				return;
+
             clientConnection = new ClientConnection(subscriptionEndpoint, this);
             connectToServerTask = clientConnection.Connect()
                 .ContinueWith(task =>
                 {
-                    if (task.Exception == null)
-                        return;
+					if (task.Exception != null)
+						return task;
 
-                    clientConnection.Send(JObject.FromObject(new ChangeSubscriptionMessage
+                    return clientConnection.Send(JObject.FromObject(new ChangeSubscriptionMessage
                     {
                         Type = ChangeSubscriptionType.Set,
                         Queues = new List<string>(lastEtagPerQeueue.Keys)
                     }));
-                });
+                })
+				.Unwrap()
+				.ContinueWith(_ =>
+				              	{
+				              		TaskEx.Delay(TimeSpan.FromSeconds(3))
+				              			.ContinueWith(task => TryReconnecting());
+				              	}, TaskContinuationOptions.OnlyOnFaulted);
         }
 
         public void OnMessageArrived(JObject msg)
@@ -130,8 +143,7 @@ namespace Raven.MQ.Client
             return Task.Factory.FromAsync<Stream>(webRequest.BeginGetRequestStream, webRequest.EndGetRequestStream, null)
                     .ContinueWith(getReqStreamTask =>
                     {
-                        if (getReqStreamTask.Exception != null)
-                            return getReqStreamTask;
+						getReqStreamTask.AssertNotExceptional();
 
                         var enumerable = lastEtagPerQeueue.Select(x => new ReadCommand
                         {
@@ -140,16 +152,14 @@ namespace Raven.MQ.Client
                         return getReqStreamTask.Result.Write(new JArray(enumerable));
                     }).Unwrap()
                     .ContinueWith(writeRequestTask =>
-                    {
-                        if (writeRequestTask.Exception != null)
-                            writeRequestTask.Wait();// will throw again
+					{
+						writeRequestTask.AssertNotExceptional();
 
-                        return Task.Factory.FromAsync<WebResponse>(webRequest.BeginGetResponse, webRequest.EndGetResponse, null);
+						return Task.Factory.FromAsync<WebResponse>(webRequest.BeginGetResponse, webRequest.EndGetResponse, null);
                     }).Unwrap()
                     .ContinueWith(responseTask =>
                     {
-                        if (responseTask.Exception != null)
-                            responseTask.Wait();// throw aagin
+						responseTask.AssertNotExceptional();
 
                         var responseStream = responseTask.Result.GetResponseStream();
                         return responseStream.ReadJObject();
@@ -216,8 +226,7 @@ namespace Raven.MQ.Client
             return Task.Factory.FromAsync<Stream>(webRequest.BeginGetRequestStream, webRequest.EndGetRequestStream, null)
                     .ContinueWith(getReqStreamTask =>
                     {
-                        if (getReqStreamTask.Exception != null)
-                            return getReqStreamTask;
+						getReqStreamTask.AssertNotExceptional();
 
                         var enumerable = msgs.Select(msg => new EnqueueCommand
                         {
@@ -227,15 +236,13 @@ namespace Raven.MQ.Client
                     }).Unwrap()
                     .ContinueWith(writeRequestTask =>
                     {
-                        if (writeRequestTask.Exception != null)
-                            writeRequestTask.Wait();// will throw again
+                        writeRequestTask.AssertNotExceptional();
 
                         return Task.Factory.FromAsync<WebResponse>(webRequest.BeginGetResponse, webRequest.EndGetResponse, null);
                     }).Unwrap()
                     .ContinueWith(responseTask =>
                     {
-                        if (responseTask.Exception != null)
-                            responseTask.Wait();// throw aagin
+						responseTask.AssertNotExceptional();
 
                         responseTask.Result.Close();
                     })

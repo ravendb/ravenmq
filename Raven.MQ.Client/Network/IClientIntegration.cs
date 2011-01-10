@@ -5,7 +5,7 @@ namespace Raven.MQ.Client.Network
     public interface IClientIntegration
     {
         void Init(ClientConnection connection);
-        void OnConnectionClosed();
+        void TryReconnecting();
         void OnMessageArrived(JObject msg);
     }
 }

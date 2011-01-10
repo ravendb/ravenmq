@@ -104,7 +104,7 @@ namespace Raven.MQ.Client.Network
         private void Close()
         {
             socket.Dispose();
-            clientIntegration.OnConnectionClosed();
+            clientIntegration.TryReconnecting();
         }
     }
 }

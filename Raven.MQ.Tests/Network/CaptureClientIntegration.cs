@@ -15,7 +15,7 @@ namespace Raven.MQ.Tests.Network
         {
         }
 
-        public void OnConnectionClosed()
+        public void TryReconnecting()
         {
         }
 

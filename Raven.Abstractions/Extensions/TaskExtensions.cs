@@ -5,6 +5,11 @@ namespace Raven.Abstractions.Extensions
 {
     public static class TaskExtensions
     {
+		public static void AssertNotExceptional(this Task task)
+		{
+			task.Wait();//will throw if exceptional
+		}
+
         public static Task IgnoreExceptions(this Task task)
         {
             task.ContinueWith(c => GC.KeepAlive(c.Exception),
