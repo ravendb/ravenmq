@@ -7,7 +7,7 @@ namespace Raven.MQ.Server
     [RunInstaller(true)]
     public partial class ProjectInstaller : Installer
     {
-        internal const string SERVICE_NAME = "RavenDB";
+        internal const string SERVICE_NAME = "RavenMQ";
 
         public ProjectInstaller()
         {
