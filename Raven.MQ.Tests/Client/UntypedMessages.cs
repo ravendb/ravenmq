@@ -61,7 +61,7 @@ namespace Raven.MQ.Tests.Client
 			{
 
 				connection.PublishAsync(new IncomingMessage
-				{
+			{	
 					Queue = "/queues/abc",
 					Data = new byte[] {1, 2, 3},
 				});
