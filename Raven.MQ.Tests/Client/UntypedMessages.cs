@@ -54,6 +54,31 @@ namespace Raven.MQ.Tests.Client
             }
         }
 
+		[Fact]
+		public void Publishing_from_the_client_out_of_scope()
+		{
+			using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8181)))
+			{
+
+				connection.PublishAsync(new IncomingMessage
+				{
+					Queue = "/queues/abc",
+					Data = new byte[] {1, 2, 3},
+				});
+				var manualResetEventSlim = new ManualResetEventSlim(false);
+				OutgoingMessage msg = null;
+				connection.Subscribe("/queues/abc", (context, message) =>
+				{
+					msg = message;
+					manualResetEventSlim.Set();
+				});
+
+				manualResetEventSlim.Wait(TimeSpan.FromSeconds(10));
+
+				Assert.Equal(new byte[] { 1, 2, 3 }, msg.Data);
+			}
+		}
+
         [Fact]
         public void Can_send_a_message_from_receiving_msg()
         {

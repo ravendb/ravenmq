@@ -217,7 +217,12 @@ namespace Raven.MQ.Client
             UpdateAsync();
         }
 
-        private Task PublishMessagesAsync(IEnumerable<IncomingMessage> msgs)
+		public Task PublishAsync(IncomingMessage msg)
+		{
+			return PublishMessagesAsync(new[] {msg,});
+		}
+
+    	public Task PublishMessagesAsync(IEnumerable<IncomingMessage> msgs)
         {
             var webRequest = (HttpWebRequest)WebRequest.Create(queueBulkEndpoint);
             webRequest.Method = "POST";
