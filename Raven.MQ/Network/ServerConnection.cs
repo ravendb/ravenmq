@@ -8,7 +8,6 @@ using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Raven.Abstractions.Extensions;
-using RavenMQ.Extensions;
 
 namespace RavenMQ.Network
 {
@@ -17,15 +16,15 @@ namespace RavenMQ.Network
         public static readonly Guid RequestHandshakeSignature = new Guid("585D6B31-A06A-40DD-99EE-001323DAADB0");
         public static readonly Guid ResponseHandshakeSignature = new Guid("3397D9BF-2C51-448E-A1B1-3981D42A8609");
         private readonly ConcurrentDictionary<Guid, Socket> connections = new ConcurrentDictionary<Guid, Socket>();
-        private readonly IPEndPoint endpoint;
         private readonly Socket listener;
-        private readonly IServerIntegration serverIntegration;
+    	private readonly int port;
+    	private readonly IServerIntegration serverIntegration;
     	private readonly ILog log = LogManager.GetLogger(typeof (ServerConnection));
 
-        public ServerConnection(IPEndPoint endpoint, IServerIntegration serverIntegration)
+        public ServerConnection(int port, IServerIntegration serverIntegration)
         {
-            this.endpoint = endpoint;
-            this.serverIntegration = serverIntegration;
+        	this.port = port;
+        	this.serverIntegration = serverIntegration;
             listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
 
             serverIntegration.Init(this);
@@ -43,9 +42,9 @@ namespace RavenMQ.Network
 
         public void Start()
         {
-            listener.Bind(endpoint);
+        	listener.Bind(new IPEndPoint(IPAddress.Loopback, port));
             listener.Listen(10);
-        	log.DebugFormat("Starting to listen to connections on {0}", endpoint);
+        	log.DebugFormat("Starting to listen to connections on port {0}", port);
             ListenForConnections();
         }
 
@@ -98,13 +97,13 @@ namespace RavenMQ.Network
 
         private void Handshake(Socket socket)
         {
-            socket.ReadJObject()
+            socket.ReadBuffer(16)
                 .ContinueWith(initMsgTask =>
                 {
-                    JObject result;
+                    byte[] result;
                     try
                     {
-                        result = initMsgTask.Result;
+                    	result = initMsgTask.Result.Array;
                     }
                     catch (AggregateException e)
                     {
@@ -132,7 +131,7 @@ namespace RavenMQ.Network
                             .ContinueWith(writeErrorTask => socket.Dispose());
                         return;
                     }
-                    if (new Guid(result.Value<byte[]>("RequestSignature")) != RequestHandshakeSignature)
+                    if (new Guid(result) != RequestHandshakeSignature)
                     {
 						log.Error("Could not handshake properly because client didn't pass value RequestHandshakeSignature"); 
 						socket.Write(new JObject
@@ -145,11 +144,7 @@ namespace RavenMQ.Network
                         return;
                     }
 
-                    socket.Write(new JObject
-                    {
-                        {"Type", "Confirmation"},
-                        {"ResponseSignature", ResponseHandshakeSignature.ToByteArray()}
-                    })
+					socket.Write(ResponseHandshakeSignature.ToByteArray())
                         .ContinueWith(responseMsgTask =>
                         {
                             if (responseMsgTask.Exception != null)

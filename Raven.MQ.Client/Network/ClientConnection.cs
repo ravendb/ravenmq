@@ -51,30 +51,29 @@ namespace Raven.MQ.Client.Network
                     if (task.Exception != null)
                         return task;
 
-                    return socket.Write(new JObject
-                    {
-                        {"RequestSignature", RequestHandshakeSignature.ToByteArray()}
-                    })
+                    return socket.Write(RequestHandshakeSignature.ToByteArray())
                         .IgnoreExceptions()
                         .ContinueWith(writeResult =>
-                                      socket.ReadJObject()
+                                      socket.ReadBuffer(16)
                                           .ContinueWith(AssertValidServerResponse)
                                           .ContinueWith(connectionTask =>
                                           {
-                                              if (connectionTask.Exception != null)
-                                                  return;
+											  if (connectionTask.Exception != null)
+											  	return connectionTask;
                                               StartReceiving();
                                               connected = true;
+
+                                          	return connectionTask;
                                           }))
-                        .Unwrap();
+                        .Unwrap()
+						.Unwrap();
 
                 }).Unwrap();
         }
 
-        private static void AssertValidServerResponse(Task<JObject> readTask)
+        private static void AssertValidServerResponse(Task<ArraySegment<byte>> readTask)
         {
-            if (new Guid(readTask.Result.Value<byte[]>("ResponseSignature")) !=
-                ResponseHandshakeSignature)
+            if (new Guid(readTask.Result.Array) != ResponseHandshakeSignature)
                 throw new InvalidOperationException("Invalid response signature from server");
         }
 
