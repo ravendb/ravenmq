@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raven.MQ.Server", "Raven.MQ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raven.MQ.Client", "Raven.MQ.Client\Raven.MQ.Client.csproj", "{A8060EAC-0448-4F52-82AE-6A4D62D5082C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raven.MQ.Tryouts", "Raven.MQ.Tryouts\Raven.MQ.Tryouts.csproj", "{40F539FD-39BB-4D76-BDCF-4A82A26A0D01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +109,16 @@ Global
 		{A8060EAC-0448-4F52-82AE-6A4D62D5082C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A8060EAC-0448-4F52-82AE-6A4D62D5082C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A8060EAC-0448-4F52-82AE-6A4D62D5082C}.Release|x86.ActiveCfg = Release|Any CPU
+		{40F539FD-39BB-4D76-BDCF-4A82A26A0D01}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{40F539FD-39BB-4D76-BDCF-4A82A26A0D01}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{40F539FD-39BB-4D76-BDCF-4A82A26A0D01}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{40F539FD-39BB-4D76-BDCF-4A82A26A0D01}.Debug|x86.ActiveCfg = Debug|x86
+		{40F539FD-39BB-4D76-BDCF-4A82A26A0D01}.Debug|x86.Build.0 = Debug|x86
+		{40F539FD-39BB-4D76-BDCF-4A82A26A0D01}.Release|Any CPU.ActiveCfg = Release|x86
+		{40F539FD-39BB-4D76-BDCF-4A82A26A0D01}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{40F539FD-39BB-4D76-BDCF-4A82A26A0D01}.Release|Mixed Platforms.Build.0 = Release|x86
+		{40F539FD-39BB-4D76-BDCF-4A82A26A0D01}.Release|x86.ActiveCfg = Release|x86
+		{40F539FD-39BB-4D76-BDCF-4A82A26A0D01}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
