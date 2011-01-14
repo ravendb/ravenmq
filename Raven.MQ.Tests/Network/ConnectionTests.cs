@@ -13,7 +13,7 @@ namespace Raven.MQ.Tests.Network
 
         public ConnectionTests()
         {
-            connection = new ServerConnection(new IPEndPoint(IPAddress.Loopback, 8181), new PongServerIntegration());
+            connection = new ServerConnection(8181, new PongServerIntegration());
         }
 
         [Fact]

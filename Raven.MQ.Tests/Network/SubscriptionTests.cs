@@ -33,7 +33,7 @@ namespace Raven.MQ.Tests.Network
         public void Can_subscribe_and_get_notification_about_new_messages()
         {
             var captureClientIntegration = new CaptureClientIntegration();
-            using(var c = new ClientConnection(new IPEndPoint(IPAddress.Loopback, 8181), captureClientIntegration))
+            using(var c = new ClientConnection(new IPEndPoint(IPAddress.Loopback, 8182), captureClientIntegration))
             {
                 c.Connect().Wait();
 

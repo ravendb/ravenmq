@@ -72,6 +72,7 @@
     <Compile Include="Server\Responders\Queue.cs" />
     <Compile Include="Server\Responders\QueuesRoot.cs" />
     <Compile Include="Server\Responders\AbstractQueuesResponder.cs" />
+    <Compile Include="Server\Responders\SubscriptionEndpoint.cs" />
     <Compile Include="Storage\GeneralStorageActions.cs" />
     <Compile Include="Storage\IStorageActionsAccessor.cs" />
     <Compile Include="Storage\ITransactionalStorage.cs" />

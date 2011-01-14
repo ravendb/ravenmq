@@ -24,13 +24,14 @@ namespace Raven.MQ.Tests.Client
                 RunInMemory = true,
                 AnonymousUserAccessMode = AnonymousUserAccessMode.All
             };
+			NonAdminHttp.EnsureCanListenToWhenInNonAdminContext(configuration.Port);
             ravenMqServer = new RavenMqServer(configuration);
         }
 
         [Fact]
         public void Can_get_message_from_client_connection()
         {
-            using(var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8181)))
+            using(var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8182)))
             {
                 var manualResetEventSlim = new ManualResetEventSlim(false);
                 OutgoingMessage msg = null;
@@ -57,7 +58,7 @@ namespace Raven.MQ.Tests.Client
 		[Fact]
 		public void Publishing_from_the_client_out_of_scope()
 		{
-			using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8181)))
+			using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8182)))
 			{
 
 				connection.PublishAsync(new IncomingMessage
@@ -82,7 +83,7 @@ namespace Raven.MQ.Tests.Client
         [Fact]
         public void Can_send_a_message_from_receiving_msg()
         {
-            using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8181)))
+            using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8182)))
             {
                 var manualResetEventSlim = new ManualResetEventSlim(false);
                 OutgoingMessage msg = null;
@@ -126,8 +127,9 @@ namespace Raven.MQ.Tests.Client
         [Fact]
         public void Can_flush_messages_manually()
         {
-            using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8181)))
+            using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8182)))
             {
+            	connection.ConnectToServerTask.Wait();
                 var manualResetEventSlim = new ManualResetEventSlim(false);
                 OutgoingMessage msg = null;
                 connection.Subscribe("/queues/abc", (context, message) =>
