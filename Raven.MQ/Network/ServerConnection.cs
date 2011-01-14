@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using log4net;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Raven.Abstractions.Extensions;
 using RavenMQ.Extensions;
@@ -18,6 +20,7 @@ namespace RavenMQ.Network
         private readonly IPEndPoint endpoint;
         private readonly Socket listener;
         private readonly IServerIntegration serverIntegration;
+    	private readonly ILog log = LogManager.GetLogger(typeof (ServerConnection));
 
         public ServerConnection(IPEndPoint endpoint, IServerIntegration serverIntegration)
         {
@@ -42,7 +45,7 @@ namespace RavenMQ.Network
         {
             listener.Bind(endpoint);
             listener.Listen(10);
-
+        	log.DebugFormat("Starting to listen to connections on {0}", endpoint);
             ListenForConnections();
         }
 
@@ -65,7 +68,8 @@ namespace RavenMQ.Network
             Socket value;
             if (connections.TryRemove(socketId, out value) == false)
                 return;
-            value.Dispose();
+			log.DebugFormat("Disconnecting from {0}", value.RemoteEndPoint);
+			value.Dispose();
             serverIntegration.OnConnectionRemoved(socketId);
         }
 
@@ -79,8 +83,11 @@ namespace RavenMQ.Network
         			              		if (task.Exception != null)
         			              			return;
 
+        			              		
         			              		ListenForConnections();
-
+										
+										log.DebugFormat("Got a new connection from {0}, beginning handshake", task.Result.RemoteEndPoint);
+        			              		
         			              		Handshake(task.Result);
         			              	});
         	}
@@ -101,6 +108,7 @@ namespace RavenMQ.Network
                     }
                     catch (AggregateException e)
                     {
+                    	log.Error("Could not handshake properly", e);
                         socket.Write(new JObject
                         {
                             {"Type", "Error"},
@@ -113,6 +121,7 @@ namespace RavenMQ.Network
                     }
                     catch (Exception e)
                     {
+						log.Error("Could not handshake properly", e);
                         socket.Write(new JObject
                         {
                             {"Type", "Error"},
@@ -125,7 +134,8 @@ namespace RavenMQ.Network
                     }
                     if (new Guid(result.Value<byte[]>("RequestSignature")) != RequestHandshakeSignature)
                     {
-                        socket.Write(new JObject
+						log.Error("Could not handshake properly because client didn't pass value RequestHandshakeSignature"); 
+						socket.Write(new JObject
                         {
                             {"Type", "Error"},
                             {"Error", "Invalid server signature"}
@@ -147,7 +157,8 @@ namespace RavenMQ.Network
                                 socket.Dispose();
                                 return;
                             }
-                            AddConnection(socket);
+                        	log.InfoFormat("New connection added from {0}", socket.RemoteEndPoint);
+							AddConnection(socket);
                         });
                 })
                 .ContinueWith(overallResponseTask =>
@@ -175,6 +186,10 @@ namespace RavenMQ.Network
                         RemoveConnection(socketId);
                         return;
                     }
+					if(log.IsDebugEnabled)
+					{
+						log.DebugFormat("Got new message from {0}: {1}", socket.RemoteEndPoint, task.Result.ToString(Formatting.None));
+					}
                     ReadMessageFrom(socketId, socket);
                     IgnoreException(() => serverIntegration.OnClientMessage(socketId, task.Result));
                 });
