@@ -4,6 +4,7 @@ using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using log4net.Config;
 using Raven.Http;
 using RavenMQ.Extensions;
@@ -38,23 +39,18 @@ namespace RavenMQ.Config
         public void Initialize()
         {
             HostName = Settings["Raven/HostName"];
-            var endpoint = Settings["Raven/SubscriptionEndpoint"];
+            var endpoint = Settings["Raven/SubscriptionPort"];
             if (endpoint != null)
             {
-                var endpointParts = endpoint.Split(':');
-                if (endpointParts.Length != 2)
-                {
-                    throw new InvalidOperationException("Cannot parse 'Raven/SubscriptionEndpoint'");
-                }
-                SubscriptionEndpoint = new IPEndPoint(IPAddress.Parse(endpointParts[0]), int.Parse(endpointParts[1]));
+            	SubscriptionPort = int.Parse(endpoint);
             }
             else
             {
-                SubscriptionEndpoint = new IPEndPoint(IPAddress.Any, 8181);
+            	SubscriptionPort = 8182;
             }
             var portStr = Settings["Raven/Port"];
 
-            Port = portStr != null ? int.Parse(portStr) : 8080;
+            Port = portStr != null ? int.Parse(portStr) : 8181;
 
             RunInMemory = GetConfigurationValue<bool>("Raven/RunInMemory") ?? false;
             MaxPageSize = GetConfigurationValue<int>("Raven/MaxPageSize") ?? 1024;
@@ -136,7 +132,7 @@ namespace RavenMQ.Config
         /// </summary>
         public string HostName { get; set; }
 
-        public IPEndPoint SubscriptionEndpoint { get; set; }
+        public int SubscriptionPort { get; set; }
         public int Port { get; set; }
         public string WebDir { get; set; }
         public string AccessControlAllowOrigin { get; set; }
@@ -178,7 +174,7 @@ namespace RavenMQ.Config
         public int TempIndexCleanupPeriod { get; set; }
         public int TempIndexCleanupThreshold { get; set; }
 
-        protected void ResetContainer()
+    	protected void ResetContainer()
         {
             if (Container != null && containerExternallySet == false)
             {

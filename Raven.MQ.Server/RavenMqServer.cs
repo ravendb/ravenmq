@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using Raven.Http;
 using RavenMQ.Config;
 using RavenMQ.Impl;
@@ -34,7 +35,7 @@ namespace Raven.MQ.Server
 				server = new QueuesHttpServer(settings, queues);
 				server.Start();
 
-                serverConnection = new ServerConnection(settings.SubscriptionEndpoint, new QueuesSubscriptionIntegration(queues));
+				serverConnection = new ServerConnection(settings.SubscriptionPort,new QueuesSubscriptionIntegration(queues));
                 serverConnection.Start();
 			}
 			catch (Exception)
