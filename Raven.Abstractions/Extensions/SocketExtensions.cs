@@ -8,7 +8,9 @@ namespace Raven.Abstractions.Extensions
 {
     public static class SocketExtensions
     {
-        public static Task<JObject> ReadJObject(this Socket socket)
+    	private const int TenMB = 1024*1024*10;
+
+    	public static Task<JObject> ReadJObject(this Socket socket)
         {
             var tcs = new TaskCompletionSource<JObject>();
             socket.ReadBuffer(4)
@@ -17,7 +19,10 @@ namespace Raven.Abstractions.Extensions
                     try
                     {
                         var len = BitConverter.ToInt32(task.Result.Array, task.Result.Offset);
-                        socket.ReadBuffer(len)
+						if(len > TenMB)
+							throw new InvalidOperationException("Got a reply for single JObject > 10 MB, rejecting as invalid");
+                        
+						socket.ReadBuffer(len)
                             .ContinueWith(readLenTask =>
                             {
                                 try
