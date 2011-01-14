@@ -42,7 +42,7 @@ namespace RavenMQ.Network
 
         public void Start()
         {
-        	listener.Bind(new IPEndPoint(IPAddress.Loopback, port));
+        	listener.Bind(new IPEndPoint(IPAddress.Any, port));
             listener.Listen(10);
         	log.DebugFormat("Starting to listen to connections on port {0}", port);
             ListenForConnections();
