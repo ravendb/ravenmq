@@ -197,6 +197,8 @@ namespace Raven.Http
                     logger.DebugFormat("Request #{0,4:#,0}: {1,-7} - {2,5:#,0} ms - {3} - {4}",
                                        curReq, ctx.Request.HttpMethod, sw.ElapsedMilliseconds, ctx.Response.StatusCode,
                                        ctx.Request.Url.PathAndQuery);
+
+                	ctx.OutputSavedLogItems(logger);
                 }
             }
         }

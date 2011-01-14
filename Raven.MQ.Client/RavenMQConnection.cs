@@ -18,7 +18,7 @@ using System.Linq;
 
 namespace Raven.MQ.Client
 {
-	public class RavenMQConnection : IDisposable, IClientIntegration
+	public class RavenMQConnection : IClientIntegration, IRavenMQConnection
 	{
 		private readonly Uri queueEndpointSubscriptionPort;
 		private readonly Uri queueBulkEndpoint;
@@ -32,6 +32,11 @@ namespace Raven.MQ.Client
 
 		private Task connectToServerTask;
 		private bool disposed;
+
+		public static IRavenMQConnection Connect(string queueEndpoint)
+		{
+			return new RavenMQConnection(new Uri(queueEndpoint));
+		}
 
 		public RavenMQConnection(Uri queueEndpoint)
 		{

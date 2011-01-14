@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Security.Principal;
+using System.Text;
+using log4net;
 
 namespace Raven.Http.Abstractions
 {
@@ -10,7 +13,7 @@ namespace Raven.Http.Abstractions
 		private readonly HttpListenerContext ctx;
         private readonly IRaveHttpnConfiguration configuration;
 
-        public HttpListenerContextAdpater(HttpListenerContext ctx, IRaveHttpnConfiguration configuration)
+		public HttpListenerContextAdpater(HttpListenerContext ctx, IRaveHttpnConfiguration configuration)
 		{
 			this.ctx = ctx;
 			this.configuration = configuration;
@@ -57,6 +60,20 @@ namespace Raven.Http.Abstractions
 		public void SetResponseFilter(Func<Stream, Stream> responseFilter)
 		{
 			ResponseInternal.OutputStream = responseFilter(ResponseInternal.OutputStream);
+		}
+
+		private readonly List<Action<ILog>> loggedMessages = new List<Action<ILog>>();
+		public void OutputSavedLogItems(ILog logger)
+		{
+			foreach (var loggedMessage in loggedMessages)
+			{
+				loggedMessage(logger);
+			}
+		}
+
+		public void Log(Action<ILog> loggingAction)
+		{
+			loggedMessages.Add(loggingAction);
 		}
 	}
 }

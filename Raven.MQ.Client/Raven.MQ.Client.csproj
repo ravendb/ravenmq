@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IRavenMQConnection.cs" />
     <Compile Include="IRavenMQContext.cs" />
     <Compile Include="Network\ClientConnection.cs" />
     <Compile Include="Network\IClientIntegration.cs" />
