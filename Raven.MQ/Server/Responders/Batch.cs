@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Raven.Abstractions.Commands;
@@ -11,6 +12,8 @@ namespace RavenMQ.Server.Responders
 {
     public class Batch : AbstractQueuesResponder
     {
+    	private ILog log = LogManager.GetLogger(typeof (Batch));
+
         public override string UrlPattern
         {
             get { return "^/bulk/?$"; }
@@ -48,7 +51,14 @@ namespace RavenMQ.Server.Responders
                 }
             }
 
-            Queues.Batch(typedCmds);
+			if (log.IsDebugEnabled)
+			{
+				foreach (var typedCmd in typedCmds)
+				{
+					log.DebugFormat("\t{0} {1}", typedCmd.Type, typedCmd.ArgumentsForLog);
+				}
+			}
+        	Queues.Batch(typedCmds);
 
             var readResultses = typedCmds.OfType<ReadCommand>().Select(x=>x.Result);
             context.WriteJson(readResultses);

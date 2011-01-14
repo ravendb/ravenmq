@@ -12,6 +12,7 @@ using log4net.Layout;
 using Raven.Http;
 using RavenMQ.Config;
 using RavenMQ.Extensions;
+using RavenMQ.Server.Responders;
 
 namespace Raven.MQ.Server
 {
@@ -140,6 +141,11 @@ namespace Raven.MQ.Server
 			{
 				AcceptOnMatch = true,
 				LoggerToMatch = typeof(HttpServer).FullName
+			});
+			consoleAppender.AddFilter(new LoggerMatchFilter
+			{
+				AcceptOnMatch = true,
+				LoggerToMatch = typeof(Batch).FullName
 			});
 			consoleAppender.AddFilter(new DenyAllFilter());
 			BasicConfigurator.Configure(consoleAppender);

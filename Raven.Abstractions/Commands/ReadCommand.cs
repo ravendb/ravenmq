@@ -14,7 +14,12 @@ namespace Raven.Abstractions.Commands
             ReadRequest = new ReadRequest();
         }
 
-        public CommandType Type
+    	public string ArgumentsForLog
+    	{
+			get { return ReadRequest.Queue; }
+    	}
+
+    	public CommandType Type
         {
             get { return CommandType.Read; }
         }

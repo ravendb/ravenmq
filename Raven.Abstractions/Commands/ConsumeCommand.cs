@@ -6,7 +6,12 @@ namespace Raven.Abstractions.Commands
     {
         public Guid MessageId { get; set; }
 
-        public CommandType Type
+    	public string ArgumentsForLog
+    	{
+			get { return MessageId.ToString(); }
+    	}
+
+    	public CommandType Type
         {
             get { return CommandType.Consume; }
         }

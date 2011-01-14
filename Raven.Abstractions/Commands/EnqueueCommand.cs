@@ -7,7 +7,12 @@ namespace Raven.Abstractions.Commands
     {
         public IncomingMessage Message { get; set; }
 
-        public CommandType Type
+    	public string ArgumentsForLog
+    	{
+    		get { return Message.Queue; }
+    	}
+
+    	public CommandType Type
         {
             get { return CommandType.Enqueue; }
         }
