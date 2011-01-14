@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using Raven.Abstractions.Data;
 using Raven.Http;
@@ -31,7 +30,7 @@ namespace Raven.MQ.Tests.Client
         [Fact]
         public void Can_get_message_from_client_connection()
         {
-            using(var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8182)))
+            using(var connection = new RavenMQConnection(new Uri(configuration.ServerUrl)))
             {
                 var manualResetEventSlim = new ManualResetEventSlim(false);
                 OutgoingMessage msg = null;
@@ -58,7 +57,7 @@ namespace Raven.MQ.Tests.Client
 		[Fact]
 		public void Publishing_from_the_client_out_of_scope()
 		{
-			using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8182)))
+			using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl)))
 			{
 
 				connection.PublishAsync(new IncomingMessage
@@ -83,7 +82,7 @@ namespace Raven.MQ.Tests.Client
         [Fact]
         public void Can_send_a_message_from_receiving_msg()
         {
-            using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8182)))
+            using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl)))
             {
                 var manualResetEventSlim = new ManualResetEventSlim(false);
                 OutgoingMessage msg = null;
@@ -127,7 +126,7 @@ namespace Raven.MQ.Tests.Client
         [Fact]
         public void Can_flush_messages_manually()
         {
-            using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl), new IPEndPoint(IPAddress.Loopback, 8182)))
+            using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl)))
             {
             	connection.ConnectToServerTask.Wait();
                 var manualResetEventSlim = new ManualResetEventSlim(false);
