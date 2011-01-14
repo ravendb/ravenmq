@@ -34,7 +34,7 @@ namespace Raven.MQ.Tests.Client
             {
                 var manualResetEventSlim = new ManualResetEventSlim(false);
                 OutgoingMessage msg = null;
-                connection.Subscribe("/queues/abc", (context, message) =>
+                connection.SubscribeRaw("/queues/abc", (context, message) =>
                 {
                     msg = message;
                     manualResetEventSlim.Set();
@@ -60,14 +60,14 @@ namespace Raven.MQ.Tests.Client
 			using (var connection = new RavenMQConnection(new Uri(configuration.ServerUrl)))
 			{
 
-				connection.PublishAsync(new IncomingMessage
-			{	
+				connection.StartPublishing.AddRaw(new IncomingMessage
+				{
 					Queue = "/queues/abc",
 					Data = new byte[] {1, 2, 3},
-				});
+				}).PublishAsync();
 				var manualResetEventSlim = new ManualResetEventSlim(false);
 				OutgoingMessage msg = null;
-				connection.Subscribe("/queues/abc", (context, message) =>
+				connection.SubscribeRaw("/queues/abc", (context, message) =>
 				{
 					msg = message;
 					manualResetEventSlim.Set();
@@ -86,7 +86,7 @@ namespace Raven.MQ.Tests.Client
             {
                 var manualResetEventSlim = new ManualResetEventSlim(false);
                 OutgoingMessage msg = null;
-                connection.Subscribe("/queues/abc", (context, message) =>
+                connection.SubscribeRaw("/queues/abc", (context, message) =>
                 {
                     msg = message;
                     context.Send(new IncomingMessage
@@ -131,7 +131,7 @@ namespace Raven.MQ.Tests.Client
             	connection.ConnectToServerTask.Wait();
                 var manualResetEventSlim = new ManualResetEventSlim(false);
                 OutgoingMessage msg = null;
-                connection.Subscribe("/queues/abc", (context, message) =>
+                connection.SubscribeRaw("/queues/abc", (context, message) =>
                 {
                     msg = message;
                     context.Send(new IncomingMessage

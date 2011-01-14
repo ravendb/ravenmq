@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
 using Raven.Abstractions;
 using Raven.Abstractions.Commands;
@@ -59,7 +60,31 @@ namespace Raven.MQ.Client
 			get { return connectToServerTask; }
 		}
 
-		public IDisposable Subscribe(string queue, Action<IRavenMQContext, OutgoingMessage> action)
+		public IDisposable SubscribeEnvelope<TMsg>(string queue, Action<IRavenMQContext, Envelope<TMsg>> action)
+		{
+			return SubscribeRaw(queue, (context, message) =>
+			{
+				using(var bsonReader = new BsonReader(new MemoryStream(message.Data)))
+				{
+					var msg = new JsonSerializer().Deserialize<TMsg>(bsonReader);
+					action(context, new Envelope<TMsg>
+					{
+						Expiry = message.Expiry,
+						Message = msg,
+						Id = message.Id,
+						Metadata = message.Metadata,
+						Queue = message.Queue
+					});
+				}
+			});
+		}
+
+		public IDisposable Subscribe<TMsg>(string queue, Action<IRavenMQContext, TMsg> action)
+		{
+			return SubscribeEnvelope<TMsg>(queue, (context, env) => action(context, env.Message));
+		}
+
+		public IDisposable SubscribeRaw(string queue, Action<IRavenMQContext, OutgoingMessage> action)
 		{
 			lastEtagPerQeueue.TryAdd(queue, Guid.Empty);
 			actionsPerQueue.AddOrUpdate(queue, action, (s, existing) => existing + action);
@@ -88,6 +113,11 @@ namespace Raven.MQ.Client
 					}
 				}
 			});
+		}
+
+		public IRavenMQPublisher StartPublishing
+		{
+			get { return new RavenMQPublisher(this); }
 		}
 
 		private void SendSubscribtionMessageAsync(string queue, ChangeSubscriptionType type)
@@ -258,11 +288,6 @@ namespace Raven.MQ.Client
 			if (needAnotherUpdate == false)
 				return;
 			UpdateAsync();
-		}
-
-		public Task PublishAsync(IncomingMessage msg)
-		{
-			return PublishMessagesAsync(new[] { msg, });
 		}
 
 		public Task PublishMessagesAsync(IEnumerable<IncomingMessage> msgs)

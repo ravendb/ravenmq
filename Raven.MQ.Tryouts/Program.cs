@@ -11,19 +11,23 @@ namespace Raven.MQ.Tryouts
 	{
 		static void Main(string[] args)
 		{
-			using(var connection = RavenMQConnection.Connect("http://reduction:8181"))
+			using(var connection = RavenMQConnection.Connect("http://localhost:8181"))
 			{
-				connection.Subscribe("/queues/abc", (context, message) => 
-					Console.WriteLine(Encoding.UTF8.GetString(message.Data)));
+				connection.
+					Subscribe<User>("/queues/abc", (context, message) => Console.WriteLine(message.Name));
 
-				connection.PublishAsync(new IncomingMessage
-				{
-					Queue = "/queues/abc",
-					Data = Encoding.UTF8.GetBytes("Hello Ravens")
-				});
+				connection
+					.StartPublishing
+					.Add("/queues/abc", new User {Name = "Ayende"})
+					.PublishAsync();
 
 				Console.ReadLine();
 			}
 		}
+	}
+
+	public class User
+	{
+		public string Name { get; set; }
 	}
 }
