@@ -42,7 +42,12 @@ namespace Raven.MQ.Client
             TryReconnecting();
         }
 
-        public IDisposable Subscribe(string queue, Action<IRavenMQContext, OutgoingMessage> action)
+    	public Task ConnectToServerTask
+    	{
+    		get { return connectToServerTask; }
+    	}
+
+    	public IDisposable Subscribe(string queue, Action<IRavenMQContext, OutgoingMessage> action)
         {
             lastEtagPerQeueue.TryAdd(queue, Guid.Empty);
             actionsPerQueue.AddOrUpdate(queue, action, (s, existing) => existing + action);
@@ -120,11 +125,14 @@ namespace Raven.MQ.Client
                     }));
                 })
 				.Unwrap()
-				.ContinueWith(_ =>
-				              	{
-				              		TaskEx.Delay(TimeSpan.FromSeconds(3))
-				              			.ContinueWith(task => TryReconnecting());
-				              	}, TaskContinuationOptions.OnlyOnFaulted);
+				.ContinueWith(task =>
+				{
+					if (task.Exception != null) // retrying if we got an error
+						TaskEx.Delay(TimeSpan.FromSeconds(3))
+							.ContinueWith(_ => TryReconnecting());
+					return task;
+				})
+				.Unwrap();
         }
 
         public void OnMessageArrived(JObject msg)
