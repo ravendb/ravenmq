@@ -31,6 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AsyncCtpLibrary, Version=1.0.3951.36518, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\SharedLibs\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -48,6 +49,7 @@
   <ItemGroup>
     <Compile Include="AbstractQueuesTest.cs" />
     <Compile Include="BatchOperations.cs" />
+    <Compile Include="Client\TypedMessages.cs" />
     <Compile Include="Client\UntypedMessages.cs" />
     <Compile Include="Network\CaptureClientIntegration.cs" />
     <Compile Include="Network\ConnectionTests.cs" />

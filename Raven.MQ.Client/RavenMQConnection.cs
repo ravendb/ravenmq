@@ -66,7 +66,7 @@ namespace Raven.MQ.Client
 			{
 				using(var bsonReader = new BsonReader(new MemoryStream(message.Data)))
 				{
-					var msg = new JsonSerializer().Deserialize<TMsg>(bsonReader);
+					var msg = ToMessage<TMsg>(bsonReader);
 					action(context, new Envelope<TMsg>
 					{
 						Expiry = message.Expiry,
@@ -77,6 +77,19 @@ namespace Raven.MQ.Client
 					});
 				}
 			});
+		}
+
+		private static TMsg ToMessage<TMsg>(BsonReader bsonReader)
+		{
+			if (typeof(Guid) == typeof(TMsg))
+			{
+				return (TMsg)(object)new Guid(JToken.ReadFrom(bsonReader).Value<byte[]>("Val"));
+			}
+			if (typeof(TMsg) == typeof(string) || typeof(TMsg).IsValueType)
+			{
+				return JToken.ReadFrom(bsonReader).Value<TMsg>("Val");
+			}
+			return new JsonSerializer().Deserialize<TMsg>(bsonReader);
 		}
 
 		public IDisposable Subscribe<TMsg>(string queue, Action<IRavenMQContext, TMsg> action)
@@ -193,9 +206,13 @@ namespace Raven.MQ.Client
 				.ContinueWith(task =>
 				{
 					if (task.Exception != null) // retrying if we got an error
+					{
 						TaskEx.Delay(TimeSpan.FromSeconds(3))
 							.ContinueWith(_ => TryReconnecting());
-					return task;
+						return task;
+					}
+					// ask for latest
+					return UpdateAsync();
 				})
 				.Unwrap();
 		}
@@ -280,7 +297,10 @@ namespace Raven.MQ.Client
 						action(ravenMQContext, outgoingMessage);
 						list.AddRange(ravenMQContext.Messages);
 					}
-					catch { }
+					catch(Exception e)
+					{
+						OnDeserializationError(e);
+					}
 				}
 			}
 			if (list.Count > 0)
@@ -288,6 +308,15 @@ namespace Raven.MQ.Client
 			if (needAnotherUpdate == false)
 				return;
 			UpdateAsync();
+		}
+
+		public event EventHandler<EventArgs<Exception>> DeserializationError;
+
+		private void OnDeserializationError(Exception exception)
+		{
+			var onDeserializationError = DeserializationError;
+			if(onDeserializationError!=null)
+				onDeserializationError(this, new EventArgs<Exception>(exception));
 		}
 
 		public Task PublishMessagesAsync(IEnumerable<IncomingMessage> msgs)

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Bson;
@@ -28,13 +29,30 @@ namespace Raven.MQ.Client
 		{
 			var memoryStream = new MemoryStream();
 			using(var bsonWriter = new BsonWriter(memoryStream))
-				JObject.FromObject(msg).WriteTo(bsonWriter);
+				ToJson(msg).WriteTo(bsonWriter);
 			return AddRaw(new IncomingMessage
 			{
 				Data = memoryStream.ToArray(),
 				Metadata = metadata,
 				Queue = queue,
 			});
+		}
+
+		private static JToken ToJson(object msg)
+		{
+			if (msg is JObject)
+				return (JToken)msg;
+			if(msg is Guid)
+				return new JObject
+				{
+					{"Val", ((Guid)msg).ToByteArray()}
+				};
+			if (msg is ValueType || msg is string)
+				return new JObject
+				{
+					{"Val", new JValue(msg)}
+				};
+			return JObject.FromObject(msg);
 		}
 
 		public IRavenMQPublisher Add(string queue, object msg)
