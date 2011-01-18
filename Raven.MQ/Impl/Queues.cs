@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -246,5 +247,29 @@ namespace RavenMQ.Impl
                     );
             return names;
         }
+
+
+		static string buildVersion;
+		public static string BuildVersion
+		{
+			get
+			{
+				if (buildVersion == null)
+					buildVersion = FileVersionInfo.GetVersionInfo(typeof(Queues).Assembly.Location).FilePrivatePart.ToString();
+				return buildVersion;
+			}
+		}
+
+		static string productVersion;
+
+		public static string ProductVersion
+		{
+			get
+			{
+				if (productVersion == null)
+					productVersion = FileVersionInfo.GetVersionInfo(typeof(Queues).Assembly.Location).ProductVersion;
+				return productVersion;
+			}
+		}
     }
 }

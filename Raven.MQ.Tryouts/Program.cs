@@ -1,30 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Raven.Abstractions.Data;
 using Raven.MQ.Client;
 
 namespace Raven.MQ.Tryouts
 {
 	class Program
 	{
-		static void Main(string[] args)
+		static void Main()
 		{
-			using(var connection = RavenMQConnection.Connect("http://localhost:8181"))
+
+			var con = new RavenMQConnection(new Uri("http://AYENDEPC:8181/"));
+
+			con.Subscribe<User>("/queues/users/1234", (context, msg) => Console.WriteLine(msg.Name));
+
+			con.Subscribe<User>("/streams/users/1234", (context, msg) => Console.WriteLine(msg.Name));
+
+			for (int i = 0; i < 100; i++)
 			{
-				connection.
-					Subscribe<User>("/queues/abc", (context, message) => Console.WriteLine(message.Name));
-
-				connection
-					.StartPublishing
-					.Add("/queues/abc", new User {Name = "Ayende"})
+				con.StartPublishing
+					.Add("/streams/users/1234", new User {Name = "users/" + i})
+					.Add("/queues/users/1234", new User {Name = "streams/" + i})
 					.PublishAsync();
-
-				Console.ReadLine();
 			}
+
+			Console.ReadLine();
 		}
 	}
+
 
 	public class User
 	{

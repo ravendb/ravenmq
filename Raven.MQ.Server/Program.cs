@@ -12,6 +12,7 @@ using log4net.Layout;
 using Raven.Http;
 using RavenMQ.Config;
 using RavenMQ.Extensions;
+using RavenMQ.Impl;
 using RavenMQ.Server.Responders;
 
 namespace Raven.MQ.Server
@@ -149,10 +150,14 @@ namespace Raven.MQ.Server
                 ravenConfiguration.AnonymousUserAccessMode = anonymousUserAccessMode.Value;
             using (new RavenMqServer(ravenConfiguration))
             {
-                Console.WriteLine("Raven MQ is ready to process requests.");
-                Console.WriteLine("Data directory: {0}, HostName: {1} Port: {2}", ravenConfiguration.DataDirectory, ravenConfiguration.HostName ?? "<any>", ravenConfiguration.Port);
-                Console.WriteLine("Press the enter key to stop the server or enter 'cls' and then enter to clear the log");
-                while (true)
+
+				Console.WriteLine("RavenMQ is ready to process requests. Build {0}, Version {1}", Queues.BuildVersion, Queues.ProductVersion);
+				Console.WriteLine("Data directory: {0}", ravenConfiguration.DataDirectory);
+				Console.WriteLine("HostName: {0} Port: {1}, Storage: Munin", ravenConfiguration.HostName ?? "<any>",
+					ravenConfiguration.Port);
+				Console.WriteLine("Server Url: {0}", ravenConfiguration.ServerUrl);
+				Console.WriteLine("Press <enter> to stop or 'cls' and <enter> to clear the log");
+				while (true)
                 {
                     var readLine = Console.ReadLine();
                     if (!"CLS".Equals(readLine, StringComparison.InvariantCultureIgnoreCase))
