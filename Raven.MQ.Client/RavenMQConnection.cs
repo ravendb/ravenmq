@@ -180,9 +180,11 @@ namespace Raven.MQ.Client
 				})
 				.ContinueWith(getPortTask =>
 				{
+					var result = getPortTask.Result;
+
 					var hostAddresses = Dns.GetHostAddresses(queueEndpointSubscriptionPort.DnsSafeHost);
 
-					return new IPEndPoint(hostAddresses.First(x => x.AddressFamily == AddressFamily.InterNetwork), getPortTask.Result);
+					return new IPEndPoint(hostAddresses.First(x => x.AddressFamily == AddressFamily.InterNetwork), result);
 				})
 				.ContinueWith(subscriptionEndpointTask =>
 				{
@@ -207,14 +209,23 @@ namespace Raven.MQ.Client
 				{
 					if (task.Exception != null) // retrying if we got an error
 					{
+						if (disposed)
+							return task;
+
+						Console.WriteLine("Failure {0}", DateTime.Now);
+						GC.Collect(2);
+						GC.WaitForPendingFinalizers();
+						
 						TaskEx.Delay(TimeSpan.FromSeconds(3))
 							.ContinueWith(_ => TryReconnecting());
 						return task;
 					}
+					Console.WriteLine("Success");
 					// ask for latest
 					return UpdateAsync();
 				})
-				.Unwrap();
+				.Unwrap()
+				.IgnoreExceptions();
 		}
 
 		public void OnMessageArrived(JObject msg)
